@@ -5,6 +5,7 @@ import 'package:animate_do/animate_do.dart';
 import '../config/app_theme.dart';
 import '../providers/campaign_provider.dart';
 import '../models/campaign.dart';
+import '../widgets/skeleton_loading.dart';
 import 'campaign_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -64,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(
-                Icons.account_balance_wallet,
+                Icons.diamond_rounded,
                 color: Colors.white,
                 size: 24,
               ),
@@ -78,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   style: AppTheme.heading2.copyWith(fontSize: 20),
                 ),
                 Text(
-                  'Blockchain Crowdfunding',
+                  'AI-Powered Crowdfunding',
                   style: AppTheme.bodySmall.copyWith(
                     color: AppTheme.textSecondary,
                     fontSize: 11,
@@ -88,6 +89,42 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ],
         ),
+        actions: [
+          // Network Badge
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.purple.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.purple.withOpacity(0.3),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: Colors.green,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  'Sepolia',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.purple[700],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: () => context.read<CampaignProvider>().loadCampaigns(),
@@ -236,32 +273,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             Consumer<CampaignProvider>(
               builder: (context, provider, child) {
                 if (provider.isLoading && provider.campaigns.isEmpty) {
-                  return SliverFillRemaining(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 80,
-                            height: 80,
-                            decoration: BoxDecoration(
-                              gradient: AppTheme.primaryGradient,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Center(
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          Text(
-                            'Loading campaigns...',
-                            style: AppTheme.bodyLarge.copyWith(
-                              color: AppTheme.textSecondary,
-                            ),
-                          ),
-                        ],
+                  return SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) => const CampaignCardSkeleton(),
+                        childCount: 3,
                       ),
                     ),
                   );
@@ -677,6 +694,47 @@ class _PremiumCampaignCardState extends State<PremiumCampaignCard>
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                               fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  
+                  // Category Badge (top left)
+                  Positioned(
+                    top: 16,
+                    left: 16,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.95),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            widget.campaign.category.icon,
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            widget.campaign.category.displayName,
+                            style: AppTheme.bodySmall.copyWith(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11,
+                              color: Colors.grey[800],
                             ),
                           ),
                         ],

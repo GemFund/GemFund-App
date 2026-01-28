@@ -23,7 +23,7 @@ class Web3Service {
     'https://rpc2.sepolia.org',
   ];
   
-  final String contractAddress = '0xdccea6997cf95ce1770b41695c17882589079121';
+  final String contractAddress = '0x5c78fF5D2C3e9d783e720A59AbEe81ABC017f626';
   bool _isInitialized = false;
   int _currentRpcIndex = 0;
 
@@ -90,13 +90,17 @@ class Web3Service {
     }
   }
 
-  // Get current gas price
+  // Get current gas price with 1.5x multiplier for faster confirmation
   Future<EtherAmount> getGasPrice() async {
     try {
       await initialize();
-      return await _client.getGasPrice();
+      final gasPrice = await _client.getGasPrice();
+      // Multiply by 1.5 for faster confirmation on testnet
+      final boostedGas = gasPrice.getInWei * BigInt.from(15) ~/ BigInt.from(10);
+      print('Original gas: ${gasPrice.getValueInUnit(EtherUnit.gwei)} Gwei, Boosted: ${EtherAmount.inWei(boostedGas).getValueInUnit(EtherUnit.gwei)} Gwei');
+      return EtherAmount.inWei(boostedGas);
     } catch (e) {
-      return EtherAmount.fromUnitAndValue(EtherUnit.gwei, 20);
+      return EtherAmount.fromUnitAndValue(EtherUnit.gwei, 30);
     }
   }
 
@@ -343,11 +347,11 @@ class Web3Service {
     throw Exception('Failed after $maxRetries attempts');
   }
 
-  // Wait for transaction confirmation
+  // Wait for transaction confirmation with longer timeout for testnet
   Future<void> _waitForTransaction(
     String txHash, {
-    Duration timeout = const Duration(seconds: 120),
-    Duration pollInterval = const Duration(seconds: 3),
+    Duration timeout = const Duration(seconds: 180),
+    Duration pollInterval = const Duration(seconds: 5),
   }) async {
     final startTime = DateTime.now();
     

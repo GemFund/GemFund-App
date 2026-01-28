@@ -618,7 +618,7 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
                       fillColor: Colors.white,
                       contentPadding: const EdgeInsets.all(16),
                     ),
-                    maxLines: 4,
+                    maxLines: _mnemonicObscured ? 1 : 4,
                     obscureText: _mnemonicObscured,
                     keyboardType: TextInputType.text,
                     textCapitalization: TextCapitalization.none,

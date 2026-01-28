@@ -17,10 +17,9 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
@@ -257,16 +256,6 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
                         ],
                       ),
                     ),
-                    Tab(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.bookmark_border, size: 18),
-                          SizedBox(width: 6),
-                          Text('Saved'),
-                        ],
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -279,7 +268,6 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
                 children: [
                   _CreatedTab(),
                   _BackedTab(),
-                  _SavedTab(),
                 ],
               ),
             ),
@@ -440,24 +428,7 @@ class _BackedTab extends StatelessWidget {
   }
 }
 
-class _SavedTab extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return _ModernEmptyState(
-      icon: Icons.bookmark_border,
-      title: 'No saved campaigns',
-      subtitle: 'Save campaigns to easily find them later',
-      actionLabel: 'Discover Campaigns',
-      gradient: LinearGradient(
-        colors: [
-          Colors.blue.withOpacity(0.1),
-          Colors.purple.withOpacity(0.1),
-        ],
-      ),
-      onAction: () {},
-    );
-  }
-}
+
 
 class _ModernCampaignCard extends StatelessWidget {
   final dynamic campaign;

@@ -15,6 +15,7 @@ class ExploreScreen extends StatefulWidget {
 
 class _ExploreScreenState extends State<ExploreScreen> {
   String _selectedFilter = 'All';
+  CampaignCategory? _selectedCategory;
   final List<String> _filters = ['All', 'Active', 'Trending', 'Almost Funded', 'New'];
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
@@ -271,6 +272,34 @@ class _ExploreScreenState extends State<ExploreScreen> {
               ),
             ),
 
+            // Category Chips
+            FadeInLeft(
+              delay: const Duration(milliseconds: 450),
+              duration: const Duration(milliseconds: 600),
+              child: Container(
+                height: 44,
+                padding: const EdgeInsets.only(bottom: 8),
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  children: [
+                    _CategoryChip(
+                      category: null,
+                      label: 'All Categories',
+                      isSelected: _selectedCategory == null,
+                      onTap: () => setState(() => _selectedCategory = null),
+                    ),
+                    ...CampaignCategory.values.map((cat) => _CategoryChip(
+                      category: cat,
+                      label: '${cat.icon} ${cat.displayName}',
+                      isSelected: _selectedCategory == cat,
+                      onTap: () => setState(() => _selectedCategory = cat),
+                    )),
+                  ],
+                ),
+              ),
+            ),
+
             // Grid View with Modern Cards
             Expanded(
               child: Consumer<CampaignProvider>(
@@ -372,6 +401,13 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   } else if (_selectedFilter == 'New') {
                     filteredCampaigns = List.from(filteredCampaigns)
                       ..sort((a, b) => b.id.compareTo(a.id));
+                  }
+
+                  // Apply category filter
+                  if (_selectedCategory != null) {
+                    filteredCampaigns = filteredCampaigns
+                        .where((c) => c.category == _selectedCategory)
+                        .toList();
                   }
 
                   if (filteredCampaigns.isEmpty) {
@@ -894,6 +930,54 @@ class _ModernFilterOption extends StatelessWidget {
                 color: Colors.grey[400],
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Category filter chip widget
+class _CategoryChip extends StatelessWidget {
+  final CampaignCategory? category;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _CategoryChip({
+    required this.category,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: isSelected ? AppTheme.primaryColor.withOpacity(0.15) : Colors.grey[100],
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isSelected ? AppTheme.primaryColor : Colors.transparent,
+                width: 1.5,
+              ),
+            ),
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                color: isSelected ? AppTheme.primaryColor : Colors.grey[700],
+              ),
+            ),
           ),
         ),
       ),

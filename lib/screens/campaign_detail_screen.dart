@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:web3dart/web3dart.dart';
 import '../config/app_theme.dart';
 import '../models/campaign.dart';
 import '../providers/campaign_provider.dart';
 import '../services/wallet_service.dart';
+import '../widgets/trust_score_card.dart';
+import '../services/user_profile_service.dart';
 
 class CampaignDetailScreen extends StatelessWidget {
   final Campaign campaign;
@@ -46,6 +51,41 @@ class CampaignDetailScreen extends StatelessWidget {
                 ),
               ),
             ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.9),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.share_rounded, color: Colors.black87),
+                    onPressed: () {
+                      final shareText = '''
+🚀 Lihat campaign ini di GemFund!
+
+📌 ${campaign.title}
+💰 ${campaign.progressPercentage.toStringAsFixed(0)}% terdanai
+🎯 Target: ${campaign.targetInEther.toStringAsFixed(2)} ETH
+👥 ${campaign.donators.length} pendukung
+
+Dukung di aplikasi GemFund!
+#GemFund #Crowdfunding #Blockchain
+''';
+                      Share.share(shareText);
+                    },
+                  ),
+                ),
+              ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               stretchModes: const [
                 StretchMode.zoomBackground,
@@ -64,17 +104,17 @@ class CampaignDetailScreen extends StatelessWidget {
                         )
                       : _placeholderImage(),
                   
+                  // Simple dark overlay at bottom for text readability
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Colors.black.withOpacity(0.1),
-                          Colors.black.withOpacity(0.5),
-                          Colors.black.withOpacity(0.8),
+                          Colors.transparent,
+                          Colors.black.withAlpha(128),
                         ],
-                        stops: const [0.0, 0.6, 1.0],
+                        stops: const [0.5, 1.0],
                       ),
                     ),
                   ),
@@ -92,19 +132,9 @@ class CampaignDetailScreen extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           color: campaign.isExpired
-                              ? AppTheme.errorColor
-                              : AppTheme.successColor,
-                          borderRadius: BorderRadius.circular(25),
-                          boxShadow: [
-                            BoxShadow(
-                              color: (campaign.isExpired
-                                      ? AppTheme.errorColor
-                                      : AppTheme.successColor)
-                                  .withOpacity(0.5),
-                              blurRadius: 15,
-                              spreadRadius: 2,
-                            ),
-                          ],
+                              ? const Color(0xFFDC2626)
+                              : const Color(0xFF2563EB),
+                          borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -132,68 +162,6 @@ class CampaignDetailScreen extends StatelessWidget {
                 ],
               ),
             ),
-            actions: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.ios_share, color: Colors.black87, size: 20),
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('Share feature coming soon!'),
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.bookmark_border, color: Colors.black87, size: 20),
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('Saved to bookmarks!'),
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ],
           ),
 
           // Content
@@ -237,14 +205,9 @@ class CampaignDetailScreen extends StatelessWidget {
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(3),
-                              decoration: const BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    AppTheme.primaryColor,
-                                    AppTheme.secondaryColor,
-                                  ],
-                                ),
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF2563EB),
                                 shape: BoxShape.circle,
                               ),
                               child: const CircleAvatar(
@@ -252,7 +215,7 @@ class CampaignDetailScreen extends StatelessWidget {
                                 backgroundColor: Colors.white,
                                 child: Icon(
                                   Icons.person_outline,
-                                  color: AppTheme.primaryColor,
+                                  color: Color(0xFF2563EB),
                                   size: 22,
                                 ),
                               ),
@@ -288,8 +251,9 @@ class CampaignDetailScreen extends StatelessWidget {
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: AppTheme.primaryColor.withOpacity(0.1),
+                                color: const Color(0xFFEFF6FF),
                                 borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: const Color(0xFF2563EB).withAlpha(51)),
                               ),
                               child: const Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -297,7 +261,7 @@ class CampaignDetailScreen extends StatelessWidget {
                                   Icon(
                                     Icons.verified,
                                     size: 14,
-                                    color: AppTheme.primaryColor,
+                                    color: Color(0xFF2563EB),
                                   ),
                                   SizedBox(width: 4),
                                   Text(
@@ -305,7 +269,7 @@ class CampaignDetailScreen extends StatelessWidget {
                                     style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.bold,
-                                      color: AppTheme.primaryColor,
+                                      color: Color(0xFF2563EB),
                                     ),
                                   ),
                                 ],
@@ -318,30 +282,45 @@ class CampaignDetailScreen extends StatelessWidget {
                   ),
                 ),
 
+                const SizedBox(height: 16),
+
+                // AI Trust Score Card - Powered by Gemini AI
+                // Fetch creator profile for identity OSINT
+                FutureBuilder<UserProfile?>(
+                  future: UserProfileService().getProfile(campaign.owner.hexEip55),
+                  builder: (context, snapshot) {
+                    final creatorProfile = snapshot.data;
+                    return TrustScoreCard(
+                      campaignTitle: campaign.title,
+                      campaignDescription: campaign.description,
+                      imageUrl: campaign.image.isNotEmpty ? campaign.image : null,
+                      creatorWalletAddress: campaign.owner.hexEip55,
+                      donorAddresses: campaign.donators.map((d) => d.hexEip55).toList(),
+                      creatorFullName: creatorProfile?.fullName,
+                      creatorUsername: creatorProfile?.username,
+                      creatorEmail: creatorProfile?.email,
+                    );
+                  },
+                ),
+
                 const SizedBox(height: 20),
 
-                // Premium Progress Card
+                // Premium Progress Card - Simple Blue & White
                 FadeInUp(
                   delay: const Duration(milliseconds: 200),
                   duration: const Duration(milliseconds: 600),
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 20),
-                    padding: const EdgeInsets.all(28),
+                    padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          AppTheme.primaryColor,
-                          AppTheme.primaryColor.withOpacity(0.8),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(24),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFFE5E7EB)),
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.primaryColor.withOpacity(0.3),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
+                          color: Colors.black.withAlpha(13),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
                         ),
                       ],
                     ),
@@ -358,27 +337,25 @@ class CampaignDetailScreen extends StatelessWidget {
                                   Text(
                                     'Total Raised',
                                     style: TextStyle(
-                                      color: Colors.white.withOpacity(0.9),
+                                      color: Colors.grey[600],
                                       fontSize: 13,
                                       fontWeight: FontWeight.w500,
-                                      letterSpacing: 0.5,
                                     ),
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
                                     '${campaign.collectedInEther.toStringAsFixed(4)} ETH',
                                     style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 32,
+                                      color: Color(0xFF1F2937),
+                                      fontSize: 28,
                                       fontWeight: FontWeight.bold,
-                                      letterSpacing: -1,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     'of ${campaign.targetInEther.toStringAsFixed(2)} ETH goal',
                                     style: TextStyle(
-                                      color: Colors.white.withOpacity(0.8),
+                                      color: Colors.grey[500],
                                       fontSize: 13,
                                     ),
                                   ),
@@ -386,29 +363,26 @@ class CampaignDetailScreen extends StatelessWidget {
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.all(20),
+                              padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.15),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: Colors.white.withOpacity(0.2),
-                                  width: 1.5,
-                                ),
+                                color: const Color(0xFFEFF6FF),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: const Color(0xFF2563EB).withAlpha(51)),
                               ),
                               child: Column(
                                 children: [
                                   Text(
                                     '${campaign.progressPercentage.toStringAsFixed(0)}%',
                                     style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 28,
+                                      color: Color(0xFF2563EB),
+                                      fontSize: 24,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  Text(
+                                  const Text(
                                     'funded',
                                     style: TextStyle(
-                                      color: Colors.white.withOpacity(0.9),
+                                      color: Color(0xFF2563EB),
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -418,24 +392,24 @@ class CampaignDetailScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 20),
                         
-                        // Modern Progress Bar
+                        // Simple Progress Bar
                         Container(
-                          height: 10,
+                          height: 8,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(10),
+                            color: const Color(0xFFE5E7EB),
+                            borderRadius: BorderRadius.circular(4),
                           ),
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(4),
                             child: LinearProgressIndicator(
-                              value: campaign.progressPercentage / 100,
+                              value: (campaign.progressPercentage / 100).clamp(0.0, 1.0),
                               backgroundColor: Colors.transparent,
                               valueColor: AlwaysStoppedAnimation<Color>(
                                 campaign.progressPercentage >= 100
-                                    ? Colors.greenAccent
-                                    : Colors.white,
+                                    ? const Color(0xFF10B981)
+                                    : const Color(0xFF2563EB),
                               ),
                             ),
                           ),
@@ -455,7 +429,7 @@ class CampaignDetailScreen extends StatelessWidget {
                             Container(
                               width: 1,
                               height: 40,
-                              color: Colors.white.withOpacity(0.2),
+                              color: const Color(0xFFE5E7EB),
                             ),
                             Expanded(
                               child: _ModernInfoItem(
@@ -469,7 +443,7 @@ class CampaignDetailScreen extends StatelessWidget {
                             Container(
                               width: 1,
                               height: 40,
-                              color: Colors.white.withOpacity(0.2),
+                              color: const Color(0xFFE5E7EB),
                             ),
                             Expanded(
                               child: _ModernInfoItem(
@@ -511,22 +485,8 @@ class CampaignDetailScreen extends StatelessWidget {
                           ),
                           child: TabBar(
                             indicator: BoxDecoration(
-                              gradient: const LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  AppTheme.primaryColor,
-                                  AppTheme.secondaryColor,
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppTheme.primaryColor.withOpacity(0.4),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
+                              color: const Color(0xFF2563EB),
+                              borderRadius: BorderRadius.circular(14),
                             ),
                             indicatorSize: TabBarIndicatorSize.tab,
                             labelColor: Colors.white,
@@ -617,20 +577,8 @@ class CampaignDetailScreen extends StatelessWidget {
                 child: Container(
                   height: 56,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [
-                        AppTheme.primaryColor,
-                        AppTheme.secondaryColor,
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.primaryColor.withOpacity(0.4),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
+                    color: const Color(0xFF2563EB),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                   child: ElevatedButton(
                     onPressed: () => _showDonateDialog(context),
@@ -638,20 +586,20 @@ class CampaignDetailScreen extends StatelessWidget {
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.favorite_rounded, size: 20),
+                        Icon(Icons.favorite_rounded, size: 20, color: Colors.white),
                         SizedBox(width: 8),
                         Text(
                           'Back This Project',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
+                            color: Colors.white,
                           ),
                         ),
                       ],
@@ -665,21 +613,12 @@ class CampaignDetailScreen extends StatelessWidget {
 
   Widget _placeholderImage() {
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppTheme.primaryColor,
-            AppTheme.secondaryColor,
-          ],
-        ),
-      ),
+      color: const Color(0xFF2563EB),
       child: Center(
         child: Icon(
           Icons.campaign,
           size: 100,
-          color: Colors.white.withOpacity(0.7),
+          color: Colors.white.withAlpha(179),
         ),
       ),
     );
@@ -781,6 +720,32 @@ class CampaignDetailScreen extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(height: 12),
+              
+              // Quick Amount Buttons
+              Row(
+                children: [
+                  _QuickAmountButton(
+                    amount: '0.01',
+                    onTap: () => amountController.text = '0.01',
+                  ),
+                  const SizedBox(width: 8),
+                  _QuickAmountButton(
+                    amount: '0.05',
+                    onTap: () => amountController.text = '0.05',
+                  ),
+                  const SizedBox(width: 8),
+                  _QuickAmountButton(
+                    amount: '0.1',
+                    onTap: () => amountController.text = '0.1',
+                  ),
+                  const SizedBox(width: 8),
+                  _QuickAmountButton(
+                    amount: '0.5',
+                    onTap: () => amountController.text = '0.5',
+                  ),
+                ],
+              ),
               const SizedBox(height: 16),
               
               Container(
@@ -860,6 +825,153 @@ class CampaignDetailScreen extends StatelessWidget {
                         );
                         return;
                       }
+
+                      // Check balance before proceeding
+                      try {
+                        final walletService = WalletService();
+                        final balance = await walletService.getBalance();
+                        final balanceInEther = balance?.getValueInUnit(EtherUnit.ether) ?? 0;
+                        final estimatedGas = 0.002; // Estimated gas for transaction
+                        
+                        if (balanceInEther < amount + estimatedGas) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Row(
+                                children: [
+                                  const Icon(Icons.warning_amber_rounded, color: Colors.white),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Insufficient balance! You have ${balanceInEther.toStringAsFixed(4)} ETH but need ${(amount + estimatedGas).toStringAsFixed(4)} ETH (including gas)',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              backgroundColor: AppTheme.errorColor,
+                              behavior: SnackBarBehavior.floating,
+                              duration: const Duration(seconds: 4),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          );
+                          return;
+                        }
+                      } catch (e) {
+                        // Continue if balance check fails
+                      }
+
+                      // Show confirmation dialog first
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          title: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  gradient: AppTheme.primaryGradient,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(
+                                  Icons.volunteer_activism,
+                                  color: Colors.white,
+                                  size: 24,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              const Text('Confirm Donation'),
+                            ],
+                          ),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[100],
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('Amount:', style: TextStyle(color: Colors.grey[600])),
+                                        Text('$amount ETH', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                                    const Divider(height: 20),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('To:', style: TextStyle(color: Colors.grey[600])),
+                                        Flexible(
+                                          child: Text(
+                                            campaign.title,
+                                            style: const TextStyle(fontWeight: FontWeight.bold),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const Divider(height: 20),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('Gas Fee:', style: TextStyle(color: Colors.grey[600])),
+                                        const Text('~0.001 ETH', style: TextStyle(fontWeight: FontWeight.w500)),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.amber[50],
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: Colors.amber[200]!),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.info_outline, color: Colors.amber[700], size: 20),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        'This action cannot be undone',
+                                        style: TextStyle(fontSize: 12, color: Colors.amber[800]),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, false),
+                              child: Text('Cancel', style: TextStyle(color: Colors.grey[600])),
+                            ),
+                            ElevatedButton(
+                              onPressed: () => Navigator.pop(ctx, true),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.primaryColor,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: const Text('Confirm Donation'),
+                            ),
+                          ],
+                        ),
+                      );
+
+                      if (confirmed != true) return;
 
                       Navigator.pop(context);
 
@@ -1466,7 +1578,11 @@ class _StoryTab extends StatelessWidget {
               letterSpacing: 0.1,
             ),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 24),
+          
+          // Creator Info Section
+          _CreatorInfoWidget(walletAddress: campaign.owner.hexEip55),
+          const SizedBox(height: 24),
           
           Container(
             padding: const EdgeInsets.all(20),
@@ -1788,6 +1904,222 @@ class _BackersTab extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// Quick amount button for donation dialog
+class _QuickAmountButton extends StatelessWidget {
+  final String amount;
+  final VoidCallback onTap;
+
+  const _QuickAmountButton({
+    required this.amount,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: AppTheme.primaryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: AppTheme.primaryColor.withOpacity(0.3),
+            ),
+          ),
+          child: Center(
+            child: Text(
+              '$amount ETH',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.primaryColor,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Widget to display campaign creator info
+class _CreatorInfoWidget extends StatefulWidget {
+  final String walletAddress;
+  
+  const _CreatorInfoWidget({required this.walletAddress});
+  
+  @override
+  State<_CreatorInfoWidget> createState() => _CreatorInfoWidgetState();
+}
+
+class _CreatorInfoWidgetState extends State<_CreatorInfoWidget> {
+  UserProfile? _creatorProfile;
+  bool _isLoading = true;
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadCreatorProfile();
+  }
+  
+  Future<void> _loadCreatorProfile() async {
+    try {
+      final profile = await UserProfileService().getProfile(widget.walletAddress);
+      if (mounted) {
+        setState(() {
+          _creatorProfile = profile;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+  
+  String _getShortAddress() {
+    final addr = widget.walletAddress;
+    if (addr.length > 10) {
+      return '${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}';
+    }
+    return addr;
+  }
+  
+  String _getInitials() {
+    if (_creatorProfile?.fullName != null && _creatorProfile!.fullName!.isNotEmpty) {
+      final parts = _creatorProfile!.fullName!.split(' ');
+      if (parts.length >= 2) {
+        return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+      }
+      return _creatorProfile!.fullName!.substring(0, 1).toUpperCase();
+    }
+    return widget.walletAddress.substring(2, 4).toUpperCase();
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Avatar
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [AppTheme.primaryColor, AppTheme.secondaryColor],
+              ),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: _isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(
+                      _getInitials(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+            ),
+          ),
+          const SizedBox(width: 14),
+          // Creator info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Created by',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey[500],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _creatorProfile?.hasProfile == true
+                      ? _creatorProfile!.getDisplayName()
+                      : _getShortAddress(),
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (_creatorProfile?.email != null && _creatorProfile!.email!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(
+                      _creatorProfile!.email!,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          // Verified badge if has profile
+          if (_creatorProfile?.hasProfile == true)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: AppTheme.successColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.verified_rounded,
+                    size: 14,
+                    color: AppTheme.successColor,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Verified',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.successColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

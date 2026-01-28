@@ -7,6 +7,7 @@ import '../config/app_theme.dart';
 import '../providers/campaign_provider.dart';
 import '../services/wallet_service.dart';
 import '../services/supabase_service.dart';
+import '../services/user_profile_service.dart';
 
 
 class CreateCampaignScreen extends StatefulWidget {
@@ -1319,6 +1320,9 @@ class _CreateCampaignScreenState extends State<CreateCampaignScreen> with Ticker
       setState(() => _isCreating = false);
 
       if (success) {
+        // Save creator profile for this campaign
+        _saveCampaignCreatorProfile();
+        
         _showModernSnackBar(
           'Campaign created successfully!',
           Icons.check_circle_rounded,
@@ -1350,6 +1354,34 @@ class _CreateCampaignScreenState extends State<CreateCampaignScreen> with Ticker
       _progressText = text;
     });
     _animateProgress(progress);
+  }
+
+  /// Save campaign creator profile to Supabase
+  Future<void> _saveCampaignCreatorProfile() async {
+    try {
+      final walletAddress = await WalletService().getAddress();
+      if (walletAddress == null) return;
+
+      // Get user profile
+      final userProfile = await UserProfileService().getProfile(walletAddress);
+      
+      // Create unique campaign identifier using title + timestamp
+      final campaignId = '${_titleController.text.hashCode}_${DateTime.now().millisecondsSinceEpoch}';
+      
+      // Save creator info
+      await UserProfileService().saveCampaignCreator(
+        campaignId: campaignId,
+        walletAddress: walletAddress,
+        fullName: userProfile?.fullName,
+        username: userProfile?.username,
+        email: userProfile?.email,
+      );
+      
+      print('✅ Creator profile saved for campaign');
+    } catch (e) {
+      print('Warning: Could not save creator profile: $e');
+      // Don't throw - this is a non-critical enhancement
+    }
   }
 
   Widget _buildModernProgressDialog() {

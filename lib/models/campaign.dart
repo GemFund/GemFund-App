@@ -1,5 +1,56 @@
 import 'package:web3dart/web3dart.dart';
 
+/// Campaign categories for filtering
+enum CampaignCategory {
+  medical,
+  education,
+  disaster,
+  community,
+  technology,
+  environment,
+  other,
+}
+
+extension CampaignCategoryExtension on CampaignCategory {
+  String get displayName {
+    switch (this) {
+      case CampaignCategory.medical:
+        return 'Medical';
+      case CampaignCategory.education:
+        return 'Education';
+      case CampaignCategory.disaster:
+        return 'Disaster Relief';
+      case CampaignCategory.community:
+        return 'Community';
+      case CampaignCategory.technology:
+        return 'Technology';
+      case CampaignCategory.environment:
+        return 'Environment';
+      case CampaignCategory.other:
+        return 'Other';
+    }
+  }
+
+  String get icon {
+    switch (this) {
+      case CampaignCategory.medical:
+        return '🏥';
+      case CampaignCategory.education:
+        return '📚';
+      case CampaignCategory.disaster:
+        return '🆘';
+      case CampaignCategory.community:
+        return '🤝';
+      case CampaignCategory.technology:
+        return '💻';
+      case CampaignCategory.environment:
+        return '🌱';
+      case CampaignCategory.other:
+        return '📦';
+    }
+  }
+}
+
 class Campaign {
   final BigInt id;
   final EthereumAddress owner;
@@ -11,6 +62,7 @@ class Campaign {
   final String image;
   final List<EthereumAddress> donators;
   final List<BigInt> donations;
+
 
   Campaign({
     required this.id,
@@ -94,6 +146,59 @@ class Campaign {
     }
   }
 
+  /// Auto-detect category from title and description
+  CampaignCategory get category {
+    final text = '$title $description'.toLowerCase();
+    
+    // Medical keywords
+    if (text.contains('hospital') || text.contains('medical') || 
+        text.contains('health') || text.contains('surgery') ||
+        text.contains('cancer') || text.contains('treatment') ||
+        text.contains('doctor') || text.contains('medicine') ||
+        text.contains('sick') || text.contains('disease')) {
+      return CampaignCategory.medical;
+    }
+    
+    // Education keywords
+    if (text.contains('school') || text.contains('education') ||
+        text.contains('student') || text.contains('university') ||
+        text.contains('scholarship') || text.contains('learning') ||
+        text.contains('tuition') || text.contains('college')) {
+      return CampaignCategory.education;
+    }
+    
+    // Disaster keywords
+    if (text.contains('flood') || text.contains('earthquake') ||
+        text.contains('disaster') || text.contains('emergency') ||
+        text.contains('refugee') || text.contains('relief') ||
+        text.contains('hurricane') || text.contains('fire')) {
+      return CampaignCategory.disaster;
+    }
+    
+    // Technology keywords
+    if (text.contains('tech') || text.contains('software') ||
+        text.contains('app') || text.contains('startup') ||
+        text.contains('innovation') || text.contains('digital')) {
+      return CampaignCategory.technology;
+    }
+    
+    // Environment keywords
+    if (text.contains('environment') || text.contains('climate') ||
+        text.contains('green') || text.contains('sustainable') ||
+        text.contains('nature') || text.contains('conservation')) {
+      return CampaignCategory.environment;
+    }
+    
+    // Community keywords
+    if (text.contains('community') || text.contains('local') ||
+        text.contains('neighborhood') || text.contains('village') ||
+        text.contains('charity') || text.contains('nonprofit')) {
+      return CampaignCategory.community;
+    }
+    
+    return CampaignCategory.other;
+  }
+
   bool get isExpired => DateTime.now().isAfter(deadline);
 
   // Helper to check if campaign has any donations
@@ -105,16 +210,39 @@ class Campaign {
   // Get days remaining (can be negative if expired)
   int get daysRemaining => deadline.difference(DateTime.now()).inDays;
 
-  // Get human-readable deadline status
+  // Get human-readable deadline status with countdown
   String get deadlineStatus {
     if (isExpired) return 'Ended';
     
-    final days = daysRemaining;
-    if (days == 0) return 'Ends today';
+    final duration = deadline.difference(DateTime.now());
+    final days = duration.inDays;
+    final hours = duration.inHours % 24;
+    
+    if (days == 0 && hours == 0) return 'Ending soon';
+    if (days == 0) return '$hours hours left';
+    if (days == 1 && hours > 0) return '1 day $hours hrs left';
     if (days == 1) return '1 day left';
     if (days < 7) return '$days days left';
     if (days < 30) return '${(days / 7).round()} weeks left';
     return '${(days / 30).round()} months left';
+  }
+
+  // Get detailed countdown (for campaign detail page)
+  String get countdownDetailed {
+    if (isExpired) return 'Campaign has ended';
+    
+    final duration = deadline.difference(DateTime.now());
+    final days = duration.inDays;
+    final hours = duration.inHours % 24;
+    final minutes = duration.inMinutes % 60;
+    
+    if (days > 0) {
+      return '$days days, $hours hours remaining';
+    } else if (hours > 0) {
+      return '$hours hours, $minutes minutes remaining';
+    } else {
+      return '$minutes minutes remaining';
+    }
   }
 
   // Check if campaign is successful (reached target)

@@ -9,6 +9,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../config/app_theme.dart';
 import '../providers/campaign_provider.dart';
 import '../services/wallet_service.dart';
+import '../services/user_profile_service.dart';
+import 'edit_profile_screen.dart';
 
 // ============= TRANSACTION HISTORY MODELS =============
 enum TransactionType { donate, create }
@@ -163,6 +165,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   Timer? _balanceTimer;
   List<TransactionHistory> _transactionHistory = [];
   bool _isLoadingHistory = false;
+  UserProfile? _userProfile;
 
   @override
   void initState() {
@@ -173,6 +176,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     )..repeat(reverse: true);
     _loadBalance();
     _loadTransactionHistory();
+    _loadUserProfile();
     
     _balanceTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
       if (mounted) {
@@ -243,7 +247,51 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     await Future.wait([
       _loadBalance(),
       _loadTransactionHistory(),
+      _loadUserProfile(),
     ]);
+  }
+
+  Future<void> _loadUserProfile() async {
+    try {
+      final address = await WalletService().getAddress();
+      if (address == null) return;
+
+      final profile = await UserProfileService().getProfile(address);
+      if (mounted) {
+        setState(() {
+          _userProfile = profile;
+        });
+      }
+    } catch (e) {
+      print('Error loading user profile: $e');
+    }
+  }
+
+  Future<void> _navigateToEditProfile() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+    );
+    if (result == true) {
+      _loadUserProfile();
+    }
+  }
+
+  String _getProfileInitials() {
+    if (_userProfile == null) return 'GF';
+    final name = _userProfile!.fullName;
+    if (name != null && name.isNotEmpty) {
+      final parts = name.split(' ');
+      if (parts.length >= 2) {
+        return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+      }
+      return name.substring(0, name.length.clamp(1, 2)).toUpperCase();
+    }
+    final username = _userProfile!.username;
+    if (username != null && username.isNotEmpty) {
+      return username.substring(0, username.length.clamp(1, 2)).toUpperCase();
+    }
+    return 'GF';
   }
 
   @override
@@ -331,21 +379,58 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.white, width: 3),
                       ),
-                      child: const CircleAvatar(
+                      child: CircleAvatar(
                         radius: 45,
                         backgroundColor: Colors.white,
-                        child: Icon(
-                          Icons.account_balance_wallet_rounded,
-                          size: 45,
-                          color: AppTheme.primaryColor,
-                        ),
+                        child: _userProfile?.hasProfile == true
+                            ? Text(
+                                _getProfileInitials(),
+                                style: const TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.primaryColor,
+                                ),
+                              )
+                            : const Icon(
+                                Icons.account_balance_wallet_rounded,
+                                size: 45,
+                                color: AppTheme.primaryColor,
+                              ),
                       ),
                     ),
                   );
                 },
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
+            // User name display
+            if (_userProfile?.hasProfile == true)
+              FadeInUp(
+                child: Column(
+                  children: [
+                    Text(
+                      _userProfile!.getDisplayName(),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    if (_userProfile!.email != null && _userProfile!.email!.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          _userProfile!.email!,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white.withOpacity(0.8),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 8),
             
             FadeInUp(
               delay: const Duration(milliseconds: 100),
@@ -537,18 +622,6 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                 },
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _QuickActionCard(
-                icon: Icons.share_rounded,
-                label: 'Share',
-                color: AppTheme.successColor,
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  _showComingSoon(context);
-                },
-              ),
-            ),
           ],
         ),
       ),
@@ -674,57 +747,21 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           FadeInLeft(
             delay: const Duration(milliseconds: 650),
             child: _ModernMenuItem(
-              icon: Icons.settings_rounded,
-              title: 'Preferences',
-              subtitle: 'App settings & configurations',
+              icon: Icons.person_outline_rounded,
+              title: 'Edit Profile',
+              subtitle: _userProfile?.hasProfile == true 
+                  ? _userProfile!.getDisplayName()
+                  : 'Set your name & username',
               color: AppTheme.primaryColor,
               onTap: () {
                 HapticFeedback.selectionClick();
-                _showComingSoon(context);
+                _navigateToEditProfile();
               },
             ),
           ),
+          const SizedBox(height: 12),
           FadeInLeft(
             delay: const Duration(milliseconds: 700),
-            child: _ModernMenuItem(
-              icon: Icons.security_rounded,
-              title: 'Security',
-              subtitle: 'Privacy & security settings',
-              color: Colors.orange,
-              onTap: () {
-                HapticFeedback.selectionClick();
-                _showComingSoon(context);
-              },
-            ),
-          ),
-          FadeInLeft(
-            delay: const Duration(milliseconds: 750),
-            child: _ModernMenuItem(
-              icon: Icons.notifications_active_rounded,
-              title: 'Notifications',
-              subtitle: 'Manage your alerts',
-              color: Colors.purple,
-              onTap: () {
-                HapticFeedback.selectionClick();
-                _showComingSoon(context);
-              },
-            ),
-          ),
-          FadeInLeft(
-            delay: const Duration(milliseconds: 800),
-            child: _ModernMenuItem(
-              icon: Icons.help_rounded,
-              title: 'Help Center',
-              subtitle: 'FAQs & support',
-              color: Colors.blue,
-              onTap: () {
-                HapticFeedback.selectionClick();
-                _showComingSoon(context);
-              },
-            ),
-          ),
-          FadeInLeft(
-            delay: const Duration(milliseconds: 850),
             child: _ModernMenuItem(
               icon: Icons.info_rounded,
               title: 'About',
@@ -886,56 +923,6 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     );
   }
 
-  void _showComingSoon(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                gradient: AppTheme.primaryGradient,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: const Icon(
-                Icons.rocket_launch_rounded,
-                color: Colors.white,
-                size: 28,
-              ),
-            ),
-            const SizedBox(width: 16),
-            const Expanded(
-              child: Text(
-                'Coming Soon',
-                style: TextStyle(fontSize: 22),
-              ),
-            ),
-          ],
-        ),
-        content: Text(
-          'This feature is under development and will be available in the next update!',
-          style: AppTheme.bodyMedium,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text('Got it!', style: TextStyle(fontSize: 16)),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _showAboutDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -952,7 +939,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                 borderRadius: BorderRadius.circular(16),
               ),
               child: const Icon(
-                Icons.info_rounded,
+                Icons.diamond_rounded,
                 color: Colors.white,
                 size: 28,
               ),
@@ -966,13 +953,36 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'GemFund is a decentralized crowdfunding platform built on blockchain technology.',
+              'AI-powered decentralized crowdfunding platform with fraud detection.',
               style: AppTheme.bodyMedium.copyWith(height: 1.5),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.auto_awesome, color: Colors.blue, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Powered by Google Gemini AI',
+                      style: AppTheme.bodySmall.copyWith(
+                        color: Colors.blue[700],
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
             const _AboutItem(label: 'Version', value: '1.0.0', icon: Icons.verified_rounded),
-            const _AboutItem(label: 'Network', value: 'Ethereum Sepolia', icon: Icons.cloud_rounded),
-            const _AboutItem(label: 'Built with', value: 'Flutter & Web3dart', icon: Icons.code_rounded),
+            const _AboutItem(label: 'Network', value: 'Sepolia Testnet', icon: Icons.cloud_rounded),
+            const _AboutItem(label: 'Built with', value: 'Flutter & Solidity', icon: Icons.code_rounded),
           ],
         ),
         actions: [
@@ -990,6 +1000,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       ),
     );
   }
+
 
   void _showLogoutDialog(BuildContext context) {
     showDialog(
