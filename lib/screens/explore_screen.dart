@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:animate_do/animate_do.dart';
-import '../config/app_theme.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../providers/campaign_provider.dart';
 import '../models/campaign.dart';
 import 'campaign_detail_screen.dart';
@@ -29,450 +28,380 @@ class _ExploreScreenState extends State<ExploreScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
-            // Modern Header with Gradient
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.white,
-                    AppTheme.primaryColor.withOpacity(0.02),
-                  ],
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            FadeInDown(
-                              duration: const Duration(milliseconds: 600),
-                              child: const Text(
-                                'Explore',
-                                style: TextStyle(
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: -1,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            FadeInDown(
-                              delay: const Duration(milliseconds: 100),
-                              duration: const Duration(milliseconds: 600),
-                              child: Text(
-                                'Discover amazing campaigns',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  color: Colors.grey[600],
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      FadeInDown(
-                        delay: const Duration(milliseconds: 200),
-                        duration: const Duration(milliseconds: 600),
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                AppTheme.primaryColor.withOpacity(0.1),
-                                AppTheme.secondaryColor.withOpacity(0.1),
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Icon(
-                            Icons.explore_outlined,
-                            color: AppTheme.primaryColor,
-                            size: 28,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Premium Search Bar
-                  FadeInUp(
-                    delay: const Duration(milliseconds: 300),
-                    duration: const Duration(milliseconds: 600),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
-                            blurRadius: 20,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: TextField(
-                        controller: _searchController,
-                        onChanged: (value) {
-                          setState(() {
-                            _searchQuery = value.toLowerCase();
-                          });
-                        },
-                        decoration: InputDecoration(
-                          hintText: 'Search campaigns...',
-                          hintStyle: TextStyle(
-                            color: Colors.grey[400],
-                            fontSize: 15,
-                          ),
-                          prefixIcon: Container(
-                            margin: const EdgeInsets.all(12),
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: AppTheme.primaryColor.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.search_rounded,
-                              color: AppTheme.primaryColor,
-                              size: 20,
-                            ),
-                          ),
-                          suffixIcon: _searchQuery.isNotEmpty
-                              ? IconButton(
-                                  icon: Icon(
-                                    Icons.close,
-                                    color: Colors.grey[400],
-                                    size: 20,
-                                  ),
-                                  onPressed: () {
-                                    _searchController.clear();
-                                    setState(() {
-                                      _searchQuery = '';
-                                    });
-                                  },
-                                )
-                              : Container(
-                                  margin: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.primaryColor.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: IconButton(
-                                    icon: const Icon(
-                                      Icons.tune_rounded,
-                                      color: AppTheme.primaryColor,
-                                      size: 20,
-                                    ),
-                                    onPressed: () => _showFilterSheet(context),
-                                  ),
-                                ),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 16,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Modern Filter Chips
-            FadeInLeft(
-              delay: const Duration(milliseconds: 400),
-              duration: const Duration(milliseconds: 600),
-              child: Container(
-                height: 60,
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: _filters.length,
-                  itemBuilder: (context, index) {
-                    final isSelected = _selectedFilter == _filters[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 10),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        child: InkWell(
-                          onTap: () {
-                            setState(() {
-                              _selectedFilter = _filters[index];
-                            });
-                          },
-                          borderRadius: BorderRadius.circular(20),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 10,
-                            ),
-                            decoration: BoxDecoration(
-                              gradient: isSelected
-                                  ? const LinearGradient(
-                                      colors: [
-                                        AppTheme.primaryColor,
-                                        AppTheme.secondaryColor,
-                                      ],
-                                    )
-                                  : null,
-                              color: isSelected ? null : Colors.white,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: isSelected
-                                      ? AppTheme.primaryColor.withOpacity(0.3)
-                                      : Colors.black.withOpacity(0.04),
-                                  blurRadius: isSelected ? 12 : 8,
-                                  offset: Offset(0, isSelected ? 4 : 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              children: [
-                                if (isSelected)
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 6),
-                                    child: Icon(
-                                      _getFilterIcon(_filters[index]),
-                                      color: Colors.white,
-                                      size: 16,
-                                    ),
-                                  ),
-                                Text(
-                                  _filters[index],
-                                  style: TextStyle(
-                                    color: isSelected ? Colors.white : Colors.grey[700],
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                    letterSpacing: 0.3,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-
-            // Category Chips
-            FadeInLeft(
-              delay: const Duration(milliseconds: 450),
-              duration: const Duration(milliseconds: 600),
-              child: Container(
-                height: 44,
-                padding: const EdgeInsets.only(bottom: 8),
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  children: [
-                    _CategoryChip(
-                      category: null,
-                      label: 'All Categories',
-                      isSelected: _selectedCategory == null,
-                      onTap: () => setState(() => _selectedCategory = null),
-                    ),
-                    ...CampaignCategory.values.map((cat) => _CategoryChip(
-                      category: cat,
-                      label: '${cat.icon} ${cat.displayName}',
-                      isSelected: _selectedCategory == cat,
-                      onTap: () => setState(() => _selectedCategory = cat),
-                    )),
-                  ],
-                ),
-              ),
-            ),
-
-            // Grid View with Modern Cards
-            Expanded(
-              child: Consumer<CampaignProvider>(
-                builder: (context, provider, child) {
-                  if (provider.isLoading && provider.campaigns.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  AppTheme.primaryColor.withOpacity(0.1),
-                                  AppTheme.secondaryColor.withOpacity(0.1),
-                                ],
-                              ),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                AppTheme.primaryColor,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Text(
-                            'Loading campaigns...',
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  if (provider.campaigns.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(32),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.search_off_rounded,
-                              size: 64,
-                              color: Colors.grey[400],
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          const Text(
-                            'No campaigns found',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Try adjusting your filters',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  var filteredCampaigns = provider.campaigns;
-
-                  // Apply search filter
-                  if (_searchQuery.isNotEmpty) {
-                    filteredCampaigns = filteredCampaigns
-                        .where((c) =>
-                            c.title.toLowerCase().contains(_searchQuery) ||
-                            c.description.toLowerCase().contains(_searchQuery))
-                        .toList();
-                  }
-
-                  // Apply category filters
-                  if (_selectedFilter == 'Active') {
-                    filteredCampaigns = filteredCampaigns.where((c) => !c.isExpired).toList();
-                  } else if (_selectedFilter == 'Trending') {
-                    filteredCampaigns =
-                        filteredCampaigns.where((c) => c.donators.length > 5).toList();
-                  } else if (_selectedFilter == 'Almost Funded') {
-                    filteredCampaigns =
-                        filteredCampaigns.where((c) => c.progressPercentage >= 75).toList();
-                  } else if (_selectedFilter == 'New') {
-                    filteredCampaigns = List.from(filteredCampaigns)
-                      ..sort((a, b) => b.id.compareTo(a.id));
-                  }
-
-                  // Apply category filter
-                  if (_selectedCategory != null) {
-                    filteredCampaigns = filteredCampaigns
-                        .where((c) => c.category == _selectedCategory)
-                        .toList();
-                  }
-
-                  if (filteredCampaigns.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(32),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.filter_list_off,
-                              size: 64,
-                              color: Colors.grey[400],
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          const Text(
-                            'No results found',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Try different filters or search terms',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  return GridView.builder(
-                    padding: const EdgeInsets.all(20),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.68,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                    ),
-                    itemCount: filteredCampaigns.length,
-                    itemBuilder: (context, index) {
-                      return FadeInUp(
-                        delay: Duration(milliseconds: 50 * index),
-                        duration: const Duration(milliseconds: 600),
-                        child: _ModernCampaignCard(
-                          campaign: filteredCampaigns[index],
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
+            _buildHeader(),
+            _buildFilterChips(),
+            _buildCategoryChips(),
+            Expanded(child: _buildCampaignsGrid()),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Explore',
+                      style: GoogleFonts.urbanist(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Discover amazing campaigns',
+                      style: GoogleFonts.urbanist(
+                        fontSize: 14,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE3F2FD),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.explore_rounded,
+                  color: Color(0xFF1976D2),
+                  size: 24,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE3F2FD)),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF64B5F6).withOpacity(0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: TextField(
+              controller: _searchController,
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value.toLowerCase();
+                });
+              },
+              style: GoogleFonts.urbanist(),
+              decoration: InputDecoration(
+                hintText: 'Search campaigns...',
+                hintStyle: GoogleFonts.urbanist(
+                  color: Colors.black38,
+                  fontSize: 14,
+                ),
+                prefixIcon: const Icon(
+                  Icons.search_rounded,
+                  color: Color(0xFF1976D2),
+                  size: 22,
+                ),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                  icon: const Icon(
+                    Icons.close,
+                    color: Colors.black38,
+                    size: 20,
+                  ),
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() {
+                      _searchQuery = '';
+                    });
+                  },
+                )
+                    : IconButton(
+                  icon: const Icon(
+                    Icons.tune_rounded,
+                    color: Color(0xFF1976D2),
+                    size: 20,
+                  ),
+                  onPressed: () => _showFilterSheet(context),
+                ),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChips() {
+    return Container(
+      height: 50,
+      padding: const EdgeInsets.only(bottom: 8),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: _filters.length,
+        itemBuilder: (context, index) {
+          final isSelected = _selectedFilter == _filters[index];
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: InkWell(
+              onTap: () {
+                setState(() {
+                  _selectedFilter = _filters[index];
+                });
+              },
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  gradient: isSelected
+                      ? const LinearGradient(
+                    colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
+                  )
+                      : null,
+                  color: isSelected ? null : Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isSelected ? Colors.transparent : const Color(0xFFE3F2FD),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isSelected
+                          ? const Color(0xFF42A5F5).withOpacity(0.3)
+                          : const Color(0xFF64B5F6).withOpacity(0.05),
+                      blurRadius: isSelected ? 8 : 4,
+                      offset: Offset(0, isSelected ? 2 : 1),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (isSelected)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: Icon(
+                          _getFilterIcon(_filters[index]),
+                          color: Colors.white,
+                          size: 14,
+                        ),
+                      ),
+                    Text(
+                      _filters[index],
+                      style: GoogleFonts.urbanist(
+                        color: isSelected ? Colors.white : Colors.black87,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildCategoryChips() {
+    return Container(
+      height: 42,
+      padding: const EdgeInsets.only(bottom: 12),
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        children: [
+          _CategoryChip(
+            category: null,
+            label: 'All',
+            icon: null,
+            isSelected: _selectedCategory == null,
+            onTap: () => setState(() => _selectedCategory = null),
+          ),
+          ...CampaignCategory.values.map((cat) => _CategoryChip(
+            category: cat,
+            label: cat.displayName,
+            icon: cat.icon,
+            isSelected: _selectedCategory == cat,
+            onTap: () => setState(() => _selectedCategory = cat),
+          )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCampaignsGrid() {
+    return Consumer<CampaignProvider>(
+      builder: (context, provider, child) {
+        if (provider.isLoading && provider.campaigns.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFE3F2FD),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1976D2)),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'Loading campaigns...',
+                  style: GoogleFonts.urbanist(
+                    fontSize: 14,
+                    color: Colors.black54,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        if (provider.campaigns.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFE3F2FD),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.search_off_rounded,
+                    size: 48,
+                    color: Color(0xFF64B5F6),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'No campaigns found',
+                  style: GoogleFonts.urbanist(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Try adjusting your filters',
+                  style: GoogleFonts.urbanist(
+                    fontSize: 14,
+                    color: Colors.black54,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        var filteredCampaigns = provider.campaigns;
+
+        if (_searchQuery.isNotEmpty) {
+          filteredCampaigns = filteredCampaigns
+              .where((c) =>
+          c.title.toLowerCase().contains(_searchQuery) ||
+              c.description.toLowerCase().contains(_searchQuery))
+              .toList();
+        }
+
+        if (_selectedFilter == 'Active') {
+          filteredCampaigns = filteredCampaigns.where((c) => !c.isExpired).toList();
+        } else if (_selectedFilter == 'Trending') {
+          filteredCampaigns = filteredCampaigns.where((c) => c.donators.length > 5).toList();
+        } else if (_selectedFilter == 'Almost Funded') {
+          filteredCampaigns = filteredCampaigns.where((c) => c.progressPercentage >= 75).toList();
+        } else if (_selectedFilter == 'New') {
+          filteredCampaigns = List.from(filteredCampaigns)..sort((a, b) => b.id.compareTo(a.id));
+        }
+
+        if (_selectedCategory != null) {
+          filteredCampaigns = filteredCampaigns.where((c) => c.category == _selectedCategory).toList();
+        }
+
+        if (filteredCampaigns.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFE3F2FD),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.filter_list_off,
+                    size: 48,
+                    color: Color(0xFF64B5F6),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'No results found',
+                  style: GoogleFonts.urbanist(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Try different filters',
+                  style: GoogleFonts.urbanist(
+                    fontSize: 14,
+                    color: Colors.black54,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return GridView.builder(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 0.7,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+          ),
+          itemCount: filteredCampaigns.length,
+          itemBuilder: (context, index) {
+            return _CampaignCard(campaign: filteredCampaigns[index]);
+          },
+        );
+      },
     );
   }
 
@@ -497,12 +426,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      isScrollControlled: true,
       builder: (context) => Container(
-        padding: const EdgeInsets.all(28),
+        padding: const EdgeInsets.all(24),
         decoration: const BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -514,27 +442,26 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Filter & Sort',
-                      style: TextStyle(
-                        fontSize: 24,
+                      style: GoogleFonts.urbanist(
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        letterSpacing: -0.5,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Customize your view',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
+                      style: GoogleFonts.urbanist(
+                        fontSize: 13,
+                        color: Colors.black54,
                       ),
                     ),
                   ],
                 ),
                 Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFE3F2FD),
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
@@ -545,44 +472,40 @@ class _ExploreScreenState extends State<ExploreScreen> {
               ],
             ),
             const SizedBox(height: 24),
-            _ModernFilterOption(
+            _FilterOption(
               icon: Icons.trending_up_rounded,
               title: 'Sort by Trending',
-              subtitle: 'Popular campaigns',
-              color: Colors.orange,
+              color: const Color(0xFFFF9800),
               onTap: () {
                 Navigator.pop(context);
                 setState(() => _selectedFilter = 'Trending');
               },
             ),
             const SizedBox(height: 12),
-            _ModernFilterOption(
+            _FilterOption(
               icon: Icons.fiber_new_rounded,
               title: 'Newest First',
-              subtitle: 'Recently added',
-              color: Colors.blue,
+              color: const Color(0xFF42A5F5),
               onTap: () {
                 Navigator.pop(context);
                 setState(() => _selectedFilter = 'New');
               },
             ),
             const SizedBox(height: 12),
-            _ModernFilterOption(
+            _FilterOption(
               icon: Icons.stars_rounded,
               title: 'Almost Funded',
-              subtitle: '75% or more funded',
-              color: Colors.purple,
+              color: const Color(0xFF9C27B0),
               onTap: () {
                 Navigator.pop(context);
                 setState(() => _selectedFilter = 'Almost Funded');
               },
             ),
             const SizedBox(height: 12),
-            _ModernFilterOption(
+            _FilterOption(
               icon: Icons.bolt_rounded,
               title: 'Active Only',
-              subtitle: 'Currently running',
-              color: Colors.green,
+              color: const Color(0xFF66BB6A),
               onTap: () {
                 Navigator.pop(context);
                 setState(() => _selectedFilter = 'Active');
@@ -596,10 +519,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
   }
 }
 
-class _ModernCampaignCard extends StatelessWidget {
+class _CampaignCard extends StatelessWidget {
   final Campaign campaign;
 
-  const _ModernCampaignCard({required this.campaign});
+  const _CampaignCard({required this.campaign});
 
   @override
   Widget build(BuildContext context) {
@@ -609,8 +532,8 @@ class _ModernCampaignCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 15,
+            color: const Color(0xFF64B5F6).withOpacity(0.1),
+            blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
@@ -630,44 +553,35 @@ class _ModernCampaignCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Premium Image with Overlay
               Stack(
                 children: [
                   ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
-                    ),
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                     child: campaign.image.isNotEmpty
                         ? Image.network(
-                            campaign.image,
-                            height: 140,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return _placeholder();
-                            },
-                          )
-                        : _placeholder(),
+                      campaign.image,
+                      height: 140,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _buildPlaceholder(),
+                    )
+                        : _buildPlaceholder(),
                   ),
-                  // Status Badge
                   Positioned(
                     top: 10,
                     right: 10,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: campaign.isExpired
-                            ? Colors.red.withOpacity(0.9)
-                            : Colors.green.withOpacity(0.9),
+                        gradient: LinearGradient(
+                          colors: campaign.isExpired
+                              ? [const Color(0xFFEF5350), const Color(0xFFE53935)]
+                              : [const Color(0xFF66BB6A), const Color(0xFF43A047)],
+                        ),
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color:
-                                (campaign.isExpired ? Colors.red : Colors.green).withOpacity(0.3),
+                            color: (campaign.isExpired ? const Color(0xFFEF5350) : const Color(0xFF66BB6A)).withOpacity(0.4),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -677,14 +591,14 @@ class _ModernCampaignCard extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            campaign.isExpired ? Icons.lock_clock : Icons.bolt,
+                            campaign.isExpired ? Icons.event_busy : Icons.check_circle,
                             color: Colors.white,
                             size: 12,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             campaign.isExpired ? 'Ended' : 'Live',
-                            style: const TextStyle(
+                            style: GoogleFonts.urbanist(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                               fontSize: 10,
@@ -694,16 +608,12 @@ class _ModernCampaignCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Backers Badge
                   if (campaign.donators.isNotEmpty)
                     Positioned(
                       top: 10,
                       left: 10,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                         decoration: BoxDecoration(
                           color: Colors.black.withOpacity(0.6),
                           borderRadius: BorderRadius.circular(12),
@@ -711,15 +621,11 @@ class _ModernCampaignCard extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(
-                              Icons.people,
-                              color: Colors.white,
-                              size: 12,
-                            ),
+                            const Icon(Icons.people, color: Colors.white, size: 12),
                             const SizedBox(width: 4),
                             Text(
                               '${campaign.donators.length}',
-                              style: const TextStyle(
+                              style: GoogleFonts.urbanist(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 11,
@@ -731,99 +637,92 @@ class _ModernCampaignCard extends StatelessWidget {
                     ),
                 ],
               ),
-
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         campaign.title,
-                        style: const TextStyle(
+                        style: GoogleFonts.urbanist(
                           fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          height: 1.2,
+                          fontSize: 15,
+                          color: Colors.black87,
+                          height: 1.3,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const Spacer(),
-
-                      // Progress Info
                       Row(
                         children: [
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
                                   'Raised',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: Colors.grey[600],
-                                    fontWeight: FontWeight.w500,
+                                  style: GoogleFonts.urbanist(
+                                    fontSize: 11,
+                                    color: Colors.black54,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
                                   '${campaign.collectedInEther.toStringAsFixed(2)} ETH',
-                                  style: const TextStyle(
+                                  style: GoogleFonts.urbanist(
                                     fontWeight: FontWeight.bold,
-                                    color: AppTheme.primaryColor,
-                                    fontSize: 12,
+                                    color: const Color(0xFF1976D2),
+                                    fontSize: 13,
                                   ),
                                 ),
                               ],
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
-                                colors: [
-                                  AppTheme.primaryColor.withOpacity(0.15),
-                                  AppTheme.secondaryColor.withOpacity(0.15),
-                                ],
+                                colors: campaign.progressPercentage >= 100
+                                    ? [const Color(0xFF66BB6A), const Color(0xFF43A047)]
+                                    : [const Color(0xFF42A5F5), const Color(0xFF1E88E5)],
                               ),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: (campaign.progressPercentage >= 100 ? const Color(0xFF66BB6A) : const Color(0xFF42A5F5)).withOpacity(0.3),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                             ),
                             child: Text(
                               '${campaign.progressPercentage.toStringAsFixed(0)}%',
-                              style: const TextStyle(
+                              style: GoogleFonts.urbanist(
                                 fontWeight: FontWeight.bold,
-                                color: AppTheme.primaryColor,
-                                fontSize: 12,
+                                color: Colors.white,
+                                fontSize: 13,
                               ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
-
-                      // Modern Progress Bar
-                      Container(
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: FractionallySizedBox(
-                          alignment: Alignment.centerLeft,
-                          widthFactor: (campaign.progressPercentage / 100).clamp(0.0, 1.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: campaign.progressPercentage >= 100
-                                    ? [Colors.green, Colors.greenAccent]
-                                    : [AppTheme.primaryColor, AppTheme.secondaryColor],
-                              ),
-                              borderRadius: BorderRadius.circular(10),
+                      const SizedBox(height: 10),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: LinearProgressIndicator(
+                            value: (campaign.progressPercentage / 100).clamp(0.0, 1.0),
+                            backgroundColor: const Color(0xFFE3F2FD),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              campaign.progressPercentage >= 100 ? const Color(0xFF43A047) : const Color(0xFF1976D2),
                             ),
                           ),
                         ),
@@ -839,41 +738,36 @@ class _ModernCampaignCard extends StatelessWidget {
     );
   }
 
-  Widget _placeholder() {
+  Widget _buildPlaceholder() {
     return Container(
       height: 140,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
+          colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppTheme.primaryColor.withOpacity(0.6),
-            AppTheme.secondaryColor.withOpacity(0.6),
-          ],
         ),
       ),
       child: Center(
         child: Icon(
           Icons.campaign,
-          size: 50,
-          color: Colors.white.withOpacity(0.8),
+          size: 48,
+          color: Colors.white.withOpacity(0.7),
         ),
       ),
     );
   }
 }
 
-class _ModernFilterOption extends StatelessWidget {
+class _FilterOption extends StatelessWidget {
   final IconData icon;
   final String title;
-  final String subtitle;
   final Color color;
   final VoidCallback onTap;
 
-  const _ModernFilterOption({
+  const _FilterOption({
     required this.icon,
     required this.title,
-    required this.subtitle,
     required this.color,
     required this.onTap,
   });
@@ -882,9 +776,16 @@ class _ModernFilterOption extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: const Color(0xFFE3F2FD)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF64B5F6).withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: InkWell(
         onTap: onTap,
@@ -894,40 +795,28 @@ class _ModernFilterOption extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(icon, color: color, size: 24),
+                child: Icon(icon, color: color, size: 22),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 14),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  title,
+                  style: GoogleFonts.urbanist(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
-              Icon(
+              const Icon(
                 Icons.arrow_forward_ios_rounded,
                 size: 16,
-                color: Colors.grey[400],
+                color: Colors.black26,
               ),
             ],
           ),
@@ -937,16 +826,17 @@ class _ModernFilterOption extends StatelessWidget {
   }
 }
 
-/// Category filter chip widget
 class _CategoryChip extends StatelessWidget {
   final CampaignCategory? category;
   final String label;
+  final IconData? icon;
   final bool isSelected;
   final VoidCallback onTap;
 
   const _CategoryChip({
     required this.category,
     required this.label,
+    required this.icon,
     required this.isSelected,
     required this.onTap,
   });
@@ -955,29 +845,39 @@ class _CategoryChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: isSelected ? AppTheme.primaryColor.withOpacity(0.15) : Colors.grey[100],
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isSelected ? AppTheme.primaryColor : Colors.transparent,
-                width: 1.5,
-              ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFFE3F2FD) : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isSelected ? const Color(0xFF1976D2) : const Color(0xFFE3F2FD),
+              width: isSelected ? 1.5 : 1,
             ),
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                color: isSelected ? AppTheme.primaryColor : Colors.grey[700],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(
+                  icon,
+                  size: 14,
+                  color: isSelected ? const Color(0xFF1976D2) : Colors.black87,
+                ),
+                const SizedBox(width: 6),
+              ],
+              Text(
+                label,
+                style: GoogleFonts.urbanist(
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  color: isSelected ? const Color(0xFF1976D2) : Colors.black87,
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../config/app_theme.dart';
 import '../services/wallet_service.dart';
 import 'main_navigation.dart';
@@ -11,18 +12,18 @@ class ImportWalletScreen extends StatefulWidget {
   State<ImportWalletScreen> createState() => _ImportWalletScreenState();
 }
 
-class _ImportWalletScreenState extends State<ImportWalletScreen> 
+class _ImportWalletScreenState extends State<ImportWalletScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _walletService = WalletService();
-  
+
   final _mnemonicController = TextEditingController();
   final _privateKeyController = TextEditingController();
-  
+
   bool _isLoading = false;
   bool _mnemonicObscured = false;
   bool _privateKeyObscured = true;
-  
+
   // Progress tracking
   double _progress = 0.0;
   String _progressMessage = '';
@@ -63,10 +64,10 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
         if (_mnemonicController.text.trim().isEmpty) {
           throw Exception('Please enter your recovery phrase');
         }
-        
+
         _updateProgress(0.4, 'Processing recovery phrase...');
         await Future.delayed(const Duration(milliseconds: 500));
-        
+
         walletData = await _walletService.importFromMnemonic(
           _mnemonicController.text,
         );
@@ -74,10 +75,10 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
         if (_privateKeyController.text.trim().isEmpty) {
           throw Exception('Please enter your private key');
         }
-        
+
         _updateProgress(0.4, 'Processing private key...');
         await Future.delayed(const Duration(milliseconds: 500));
-        
+
         walletData = await _walletService.importFromPrivateKey(
           _privateKeyController.text,
         );
@@ -98,14 +99,17 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Row(
+            content: Row(
               children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 12),
-                Text('Wallet imported successfully!'),
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 12),
+                Text(
+                  'Wallet imported successfully!',
+                  style: GoogleFonts.urbanist(),
+                ),
               ],
             ),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: const Color(0xFF43A047),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
@@ -113,7 +117,7 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
 
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const MainNavigation()),
-          (route) => false,
+              (route) => false,
         );
       }
     } catch (e) {
@@ -126,11 +130,14 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
                 const Icon(Icons.error_outline, color: Colors.white),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(e.toString().replaceAll('Exception: ', '')),
+                  child: Text(
+                    e.toString().replaceAll('Exception: ', ''),
+                    style: GoogleFonts.urbanist(),
+                  ),
                 ),
               ],
             ),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: const Color(0xFFEF5350),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
@@ -142,15 +149,33 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Import Wallet',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: GoogleFonts.urbanist(
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
         ),
         elevation: 0,
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         centerTitle: true,
+        leading: IconButton(
+          icon: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE3F2FD),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.arrow_back,
+              size: 20,
+              color: Color(0xFF1976D2),
+            ),
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: Stack(
         children: [
@@ -163,12 +188,12 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
                   margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: const Color(0xFFE3F2FD),
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 20,
+                        color: const Color(0xFF64B5F6).withOpacity(0.15),
+                        blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
                     ],
@@ -176,22 +201,24 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
                   child: TabBar(
                     controller: _tabController,
                     indicator: BoxDecoration(
-                      gradient: AppTheme.primaryGradient,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
+                      ),
                       borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.primaryColor.withOpacity(0.3),
+                          color: const Color(0xFF42A5F5).withOpacity(0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
                       ],
                     ),
                     labelColor: Colors.white,
-                    unselectedLabelColor: AppTheme.textSecondary,
-                    labelStyle: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5,
+                    unselectedLabelColor: const Color(0xFF1976D2),
+                    labelStyle: GoogleFonts.urbanist(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.3,
                     ),
                     indicatorSize: TabBarIndicatorSize.tab,
                     dividerColor: Colors.transparent,
@@ -231,62 +258,68 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
                     color: Colors.white,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
-                        blurRadius: 20,
+                        color: const Color(0xFF64B5F6).withOpacity(0.1),
+                        blurRadius: 12,
                         offset: const Offset(0, -4),
                       ),
                     ],
                   ),
                   child: SafeArea(
                     child: Container(
+                      height: 56,
                       decoration: BoxDecoration(
-                        gradient: _isLoading ? null : AppTheme.primaryGradient,
+                        gradient: _isLoading
+                            ? null
+                            : const LinearGradient(
+                          colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
+                        ),
+                        color: _isLoading ? Colors.grey[300] : null,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: _isLoading
                             ? []
                             : [
-                                BoxShadow(
-                                  color: AppTheme.primaryColor.withOpacity(0.4),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
+                          BoxShadow(
+                            color: const Color(0xFF42A5F5).withOpacity(0.4),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                       child: ElevatedButton(
                         onPressed: _isLoading ? null : _importWallet,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
                           shadowColor: Colors.transparent,
-                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          disabledBackgroundColor: Colors.transparent,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
                         ),
                         child: _isLoading
                             ? const SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.5,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                ),
-                              )
-                            : const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.download_rounded, size: 22, color : Colors.white),
-                                  SizedBox(width: 12),
-                                  Text(
-                                    'Import Wallet',
-                                    style: TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 0.5,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                            : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.download_rounded, size: 22, color: Colors.white),
+                            const SizedBox(width: 12),
+                            Text(
+                              'Import Wallet',
+                              style: GoogleFonts.urbanist(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.3,
+                                color: Colors.white,
                               ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -310,7 +343,7 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
+                          color: const Color(0xFF64B5F6).withOpacity(0.3),
                           blurRadius: 30,
                           offset: const Offset(0, 10),
                         ),
@@ -333,27 +366,29 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
                                   child: CircularProgressIndicator(
                                     value: value,
                                     strokeWidth: 6,
-                                    backgroundColor: Colors.grey[200],
+                                    backgroundColor: const Color(0xFFE3F2FD),
                                     valueColor: const AlwaysStoppedAnimation<Color>(
-                                      AppTheme.primaryColor,
+                                      Color(0xFF1976D2),
                                     ),
                                   ),
                                 ),
                                 Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    gradient: AppTheme.primaryGradient,
+                                    gradient: const LinearGradient(
+                                      colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
+                                    ),
                                     shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: AppTheme.primaryColor.withOpacity(0.3),
+                                        color: const Color(0xFF42A5F5).withOpacity(0.3),
                                         blurRadius: 12,
                                         offset: const Offset(0, 4),
                                       ),
                                     ],
                                   ),
                                   child: Icon(
-                                    value < 1.0 
+                                    value < 1.0
                                         ? Icons.lock_clock_outlined
                                         : Icons.check_circle_outline,
                                     color: Colors.white,
@@ -364,36 +399,37 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
                             );
                           },
                         ),
-                        
+
                         const SizedBox(height: 28),
-                        
+
                         // Progress Title
                         Text(
                           'Importing Wallet',
-                          style: AppTheme.bodyLarge.copyWith(
+                          style: GoogleFonts.urbanist(
                             fontWeight: FontWeight.bold,
-                            fontSize: 20,
+                            fontSize: 18,
+                            color: Colors.black87,
                           ),
                         ),
-                        
+
                         const SizedBox(height: 12),
-                        
+
                         // Progress Message
                         AnimatedSwitcher(
                           duration: const Duration(milliseconds: 300),
                           child: Text(
                             _progressMessage,
                             key: ValueKey<String>(_progressMessage),
-                            style: AppTheme.bodySmall.copyWith(
-                              color: AppTheme.textSecondary,
+                            style: GoogleFonts.urbanist(
+                              color: Colors.black54,
                               fontSize: 14,
                             ),
                             textAlign: TextAlign.center,
                           ),
                         ),
-                        
+
                         const SizedBox(height: 24),
-                        
+
                         // Linear Progress Bar
                         TweenAnimationBuilder(
                           tween: Tween<double>(begin: 0, end: _progress),
@@ -406,48 +442,48 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
                                   child: LinearProgressIndicator(
                                     value: value,
                                     minHeight: 8,
-                                    backgroundColor: Colors.grey[200],
+                                    backgroundColor: const Color(0xFFE3F2FD),
                                     valueColor: const AlwaysStoppedAnimation<Color>(
-                                      AppTheme.primaryColor,
+                                      Color(0xFF1976D2),
                                     ),
                                   ),
                                 ),
                                 const SizedBox(height: 12),
                                 Text(
                                   '${(value * 100).toInt()}%',
-                                  style: AppTheme.bodyMedium.copyWith(
+                                  style: GoogleFonts.urbanist(
                                     fontWeight: FontWeight.bold,
-                                    color: AppTheme.primaryColor,
-                                    fontSize: 15,
+                                    color: const Color(0xFF1976D2),
+                                    fontSize: 14,
                                   ),
                                 ),
                               ],
                             );
                           },
                         ),
-                        
+
                         const SizedBox(height: 20),
-                        
+
                         // Security Note
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.blue[50],
+                            color: const Color(0xFFE3F2FD),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
                             children: [
                               const Icon(
                                 Icons.info_outline,
-                                color: AppTheme.primaryColor,
+                                color: Color(0xFF1976D2),
                                 size: 20,
                               ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
                                   'Please wait while we securely import your wallet',
-                                  style: AppTheme.bodySmall.copyWith(
-                                    color: AppTheme.textSecondary,
+                                  style: GoogleFonts.urbanist(
+                                    color: Colors.black54,
                                     fontSize: 13,
                                   ),
                                 ),
@@ -473,7 +509,7 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 8),
-          
+
           // Hero Info Card
           FadeInUp(
             delay: const Duration(milliseconds: 100),
@@ -481,38 +517,31 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
             child: Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFE3F2FD), Color(0xFFBBDEFB)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    AppTheme.primaryColor.withOpacity(0.1),
-                    AppTheme.secondaryColor.withOpacity(0.1),
-                  ],
                 ),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: AppTheme.primaryColor.withOpacity(0.2),
-                  width: 1.5,
-                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF64B5F6).withOpacity(0.2),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(14),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      gradient: AppTheme.primaryGradient,
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.primaryColor.withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(
                       Icons.shield_outlined,
-                      color: Colors.white,
+                      color: Color(0xFF1976D2),
                       size: 26,
                     ),
                   ),
@@ -523,16 +552,17 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
                       children: [
                         Text(
                           'Recovery Phrase',
-                          style: AppTheme.bodyLarge.copyWith(
+                          style: GoogleFonts.urbanist(
                             fontWeight: FontWeight.bold,
-                            fontSize: 17,
+                            fontSize: 16,
+                            color: Colors.black87,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'Enter your 12-word recovery phrase',
-                          style: AppTheme.bodySmall.copyWith(
-                            color: AppTheme.textSecondary,
+                          style: GoogleFonts.urbanist(
+                            color: Colors.black54,
                             fontSize: 13,
                           ),
                         ),
@@ -555,9 +585,10 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
               children: [
                 Text(
                   'Recovery Phrase',
-                  style: AppTheme.bodyLarge.copyWith(
+                  style: GoogleFonts.urbanist(
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    fontSize: 15,
+                    color: Colors.black87,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -565,32 +596,37 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: const Color(0xFFE3F2FD),
+                      width: 2,
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
+                        color: const Color(0xFF64B5F6).withOpacity(0.1),
+                        blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
                     ],
                   ),
                   child: TextField(
                     controller: _mnemonicController,
+                    style: GoogleFonts.urbanist(),
                     decoration: InputDecoration(
                       hintText: 'word1 word2 word3 ...',
-                      hintStyle: TextStyle(
+                      hintStyle: GoogleFonts.urbanist(
                         color: Colors.grey[400],
                         fontSize: 14,
                       ),
                       prefixIcon: const Icon(
                         Icons.password_outlined,
-                        color: AppTheme.primaryColor,
+                        color: Color(0xFF1976D2),
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _mnemonicObscured
                               ? Icons.visibility_outlined
                               : Icons.visibility_off_outlined,
-                          color: AppTheme.textSecondary,
+                          color: Colors.black54,
                         ),
                         onPressed: () {
                           setState(() => _mnemonicObscured = !_mnemonicObscured);
@@ -600,17 +636,10 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
                         borderRadius: BorderRadius.circular(16),
                         borderSide: BorderSide.none,
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(
-                          color: Colors.grey[200]!,
-                          width: 1,
-                        ),
-                      ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                         borderSide: const BorderSide(
-                          color: AppTheme.primaryColor,
+                          color: Color(0xFF1976D2),
                           width: 2,
                         ),
                       ),
@@ -638,11 +667,16 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
             child: Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.amber[50],
-                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.orange[50]!,
+                    Colors.orange[100]!.withOpacity(0.3),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: AppTheme.warningColor.withOpacity(0.3),
-                  width: 1.5,
+                  color: Colors.orange[200]!,
+                  width: 2,
                 ),
               ),
               child: Column(
@@ -653,36 +687,36 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: AppTheme.warningColor.withOpacity(0.2),
+                          color: Colors.orange,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(
                           Icons.warning_amber_rounded,
-                          color: AppTheme.warningColor,
-                          size: 22,
+                          color: Colors.white,
+                          size: 20,
                         ),
                       ),
                       const SizedBox(width: 12),
                       Text(
                         'Security Tips',
-                        style: AppTheme.bodyMedium.copyWith(
+                        style: GoogleFonts.urbanist(
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.warningColor,
-                          fontSize: 16,
+                          color: Colors.orange,
+                          fontSize: 15,
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  const _ModernSecurityTip(
+                  const _SecurityTip(
                     icon: Icons.block,
                     text: 'Never share your recovery phrase',
                   ),
-                  const _ModernSecurityTip(
+                  const _SecurityTip(
                     icon: Icons.spellcheck,
                     text: 'Double-check spelling of each word',
                   ),
-                  const _ModernSecurityTip(
+                  const _SecurityTip(
                     icon: Icons.verified_user,
                     text: 'Make sure you\'re using the official app',
                   ),
@@ -690,7 +724,7 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
               ),
             ),
           ),
-          
+
           const SizedBox(height: 20),
         ],
       ),
@@ -704,7 +738,7 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 8),
-          
+
           // Hero Info Card
           FadeInUp(
             delay: const Duration(milliseconds: 100),
@@ -712,43 +746,31 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
             child: Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFE3F2FD), Color(0xFFBBDEFB)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    AppTheme.secondaryColor.withOpacity(0.1),
-                    AppTheme.primaryColor.withOpacity(0.1),
-                  ],
                 ),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: AppTheme.secondaryColor.withOpacity(0.2),
-                  width: 1.5,
-                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF64B5F6).withOpacity(0.2),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(14),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [
-                          AppTheme.secondaryColor,
-                          AppTheme.primaryColor,
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.secondaryColor.withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(
                       Icons.key_outlined,
-                      color: Colors.white,
+                      color: Color(0xFF1976D2),
                       size: 26,
                     ),
                   ),
@@ -759,16 +781,17 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
                       children: [
                         Text(
                           'Private Key',
-                          style: AppTheme.bodyLarge.copyWith(
+                          style: GoogleFonts.urbanist(
                             fontWeight: FontWeight.bold,
-                            fontSize: 17,
+                            fontSize: 16,
+                            color: Colors.black87,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'Enter your wallet private key',
-                          style: AppTheme.bodySmall.copyWith(
-                            color: AppTheme.textSecondary,
+                          style: GoogleFonts.urbanist(
+                            color: Colors.black54,
                             fontSize: 13,
                           ),
                         ),
@@ -791,9 +814,10 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
               children: [
                 Text(
                   'Private Key',
-                  style: AppTheme.bodyLarge.copyWith(
+                  style: GoogleFonts.urbanist(
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    fontSize: 15,
+                    color: Colors.black87,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -801,32 +825,37 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: const Color(0xFFE3F2FD),
+                      width: 2,
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
+                        color: const Color(0xFF64B5F6).withOpacity(0.1),
+                        blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
                     ],
                   ),
                   child: TextField(
                     controller: _privateKeyController,
+                    style: GoogleFonts.urbanist(),
                     decoration: InputDecoration(
                       hintText: '0x1234567890abcdef...',
-                      hintStyle: TextStyle(
+                      hintStyle: GoogleFonts.urbanist(
                         color: Colors.grey[400],
                         fontSize: 14,
                       ),
                       prefixIcon: const Icon(
                         Icons.vpn_key_outlined,
-                        color: AppTheme.secondaryColor,
+                        color: Color(0xFF1976D2),
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _privateKeyObscured
                               ? Icons.visibility_outlined
                               : Icons.visibility_off_outlined,
-                          color: AppTheme.textSecondary,
+                          color: Colors.black54,
                         ),
                         onPressed: () {
                           setState(() => _privateKeyObscured = !_privateKeyObscured);
@@ -836,17 +865,10 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
                         borderRadius: BorderRadius.circular(16),
                         borderSide: BorderSide.none,
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(
-                          color: Colors.grey[200]!,
-                          width: 1,
-                        ),
-                      ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                         borderSide: const BorderSide(
-                          color: AppTheme.secondaryColor,
+                          color: Color(0xFF1976D2),
                           width: 2,
                         ),
                       ),
@@ -872,11 +894,11 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
             child: Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.blue[50],
-                borderRadius: BorderRadius.circular(20),
+                color: const Color(0xFFE3F2FD),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: AppTheme.primaryColor.withOpacity(0.2),
-                  width: 1.5,
+                  color: const Color(0xFF90CAF9),
+                  width: 2,
                 ),
               ),
               child: Column(
@@ -887,22 +909,22 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryColor.withOpacity(0.2),
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(
                           Icons.lightbulb_outline,
-                          color: AppTheme.primaryColor,
-                          size: 22,
+                          color: Color(0xFF1976D2),
+                          size: 20,
                         ),
                       ),
                       const SizedBox(width: 12),
                       Text(
                         'What is a Private Key?',
-                        style: AppTheme.bodyMedium.copyWith(
+                        style: GoogleFonts.urbanist(
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.primaryColor,
-                          fontSize: 16,
+                          color: const Color(0xFF1976D2),
+                          fontSize: 15,
                         ),
                       ),
                     ],
@@ -910,10 +932,10 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
                   const SizedBox(height: 14),
                   Text(
                     'A private key is a 64-character hexadecimal string that gives you full access to your wallet. It usually starts with "0x".',
-                    style: AppTheme.bodySmall.copyWith(
-                      color: AppTheme.textSecondary,
-                      height: 1.6,
-                      fontSize: 14,
+                    style: GoogleFonts.urbanist(
+                      color: Colors.grey[800],
+                      height: 1.5,
+                      fontSize: 13,
                     ),
                   ),
                 ],
@@ -930,11 +952,16 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
             child: Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.red[50],
-                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.red[50]!,
+                    Colors.red[100]!.withOpacity(0.3),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: AppTheme.errorColor.withOpacity(0.3),
-                  width: 1.5,
+                  color: Colors.red[200]!,
+                  width: 2,
                 ),
               ),
               child: Row(
@@ -943,13 +970,13 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppTheme.errorColor.withOpacity(0.2),
+                      color: const Color(0xFFEF5350),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(
                       Icons.lock_outline,
-                      color: AppTheme.errorColor,
-                      size: 22,
+                      color: Colors.white,
+                      size: 20,
                     ),
                   ),
                   const SizedBox(width: 14),
@@ -959,19 +986,19 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
                       children: [
                         Text(
                           'Keep it Secret!',
-                          style: AppTheme.bodyMedium.copyWith(
+                          style: GoogleFonts.urbanist(
                             fontWeight: FontWeight.bold,
-                            color: AppTheme.errorColor,
-                            fontSize: 16,
+                            color: const Color(0xFFEF5350),
+                            fontSize: 15,
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'Anyone with your private key can access and control your wallet. Never share it with anyone.',
-                          style: AppTheme.bodySmall.copyWith(
-                            color: AppTheme.textSecondary,
-                            height: 1.6,
-                            fontSize: 14,
+                          style: GoogleFonts.urbanist(
+                            color: Colors.grey[800],
+                            height: 1.5,
+                            fontSize: 13,
                           ),
                         ),
                       ],
@@ -981,7 +1008,7 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
               ),
             ),
           ),
-          
+
           const SizedBox(height: 20),
         ],
       ),
@@ -989,11 +1016,11 @@ class _ImportWalletScreenState extends State<ImportWalletScreen>
   }
 }
 
-class _ModernSecurityTip extends StatelessWidget {
+class _SecurityTip extends StatelessWidget {
   final IconData icon;
   final String text;
 
-  const _ModernSecurityTip({
+  const _SecurityTip({
     required this.icon,
     required this.text,
   });
@@ -1007,22 +1034,22 @@ class _ModernSecurityTip extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: AppTheme.successColor.withOpacity(0.15),
+              color: const Color(0xFF43A047).withOpacity(0.15),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               icon,
               size: 16,
-              color: AppTheme.successColor,
+              color: const Color(0xFF43A047),
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               text,
-              style: AppTheme.bodySmall.copyWith(
-                color: AppTheme.textSecondary,
-                fontSize: 14,
+              style: GoogleFonts.urbanist(
+                color: Colors.grey[800],
+                fontSize: 13,
                 height: 1.4,
               ),
             ),

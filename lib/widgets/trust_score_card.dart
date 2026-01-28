@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import 'package:google_fonts/google_fonts.dart';
 import '../config/app_theme.dart';
 import '../models/forensic_result.dart';
 import '../models/investigation_result.dart';
 import '../services/forensic_service.dart';
 
-/// Trust Score Card Widget
-/// 
-/// Displays AI-powered trust analysis for a campaign
-/// Calls GemFund Forensic Engine API on load
+/// Trust Score Card Widget with Local Caching
+///
+/// Calls API only once, then caches the result locally
+/// Provides manual refresh option to re-fetch data
 
 class TrustScoreCard extends StatefulWidget {
   final String campaignTitle;
@@ -39,11 +42,12 @@ class TrustScoreCard extends StatefulWidget {
 
 class _TrustScoreCardState extends State<TrustScoreCard> {
   final ForensicService _forensicService = ForensicService();
-  
+
   bool _isLoading = true;
+  bool _isFromCache = false;
   ForensicResult? _result;
   String? _error;
-  
+
   // Deep Investigation state
   bool _isInvestigating = false;
   InvestigationResult? _investigationResult;
@@ -52,20 +56,65 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
   @override
   void initState() {
     super.initState();
-    _fetchTrustScore();
+    _loadTrustScore();
   }
 
-  Future<void> _fetchTrustScore() async {
+  /// Generate unique cache key for this campaign
+  String _getCacheKey() {
+    // Use campaign description hash as unique identifier
+    return 'trust_score_${widget.campaignDescription.hashCode}';
+  }
+
+  /// Load trust score from cache or fetch from API
+  Future<void> _loadTrustScore() async {
     try {
       setState(() {
         _isLoading = true;
         _error = null;
+        _isFromCache = false;
       });
+
+      final prefs = await SharedPreferences.getInstance();
+      final cacheKey = _getCacheKey();
+      final cachedData = prefs.getString(cacheKey);
+
+      if (cachedData != null) {
+        // Load from cache
+        print('📦 Loading Trust Score from cache');
+        final json = jsonDecode(cachedData);
+        if (mounted) {
+          setState(() {
+            _result = ForensicResult.fromJson(json);
+            _isFromCache = true;
+            _isLoading = false;
+          });
+        }
+      } else {
+        // Fetch from API
+        await _fetchFromAPI();
+      }
+    } catch (e) {
+      print('🔴 Cache Load Error: $e');
+      // If cache fails, try fetching from API
+      await _fetchFromAPI();
+    }
+  }
+
+  /// Fetch trust score from API and save to cache
+  Future<void> _fetchFromAPI() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+        _isFromCache = false;
+      });
+
+      print('🌐 Fetching Trust Score from API');
 
       // Build creator info if available
       CreatorInfo? creatorInfo;
-      if (widget.creatorFullName != null && 
-          widget.creatorUsername != null && 
+      if (widget.creatorFullName != null &&
+          widget.creatorUsername != null &&
           widget.creatorEmail != null) {
         creatorInfo = CreatorInfo(
           fullName: widget.creatorFullName!,
@@ -82,10 +131,67 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
         creator: creatorInfo,
       );
 
+      // Save to cache
+      final prefs = await SharedPreferences.getInstance();
+      final cacheKey = _getCacheKey();
+      final json = {
+        'success': result.success,
+        'data': {
+          'score': result.data.score,
+          'verdict': result.data.verdict,
+          'summary': result.data.summary,
+          'flags': result.data.flags,
+          'evidence_match': {
+            'location_verified': result.data.evidenceMatch.locationVerified,
+            'visuals_match_text': result.data.evidenceMatch.visualsMatchText,
+            'search_corroboration': result.data.evidenceMatch.searchCorroboration,
+            'metadata_consistent': result.data.evidenceMatch.metadataConsistent,
+          },
+        },
+        'forensics': {
+          'blockchain': result.forensics.blockchain != null ? {
+            'nonce': result.forensics.blockchain!.nonce,
+            'ageHours': result.forensics.blockchain!.ageHours,
+            'washTradingScore': result.forensics.blockchain!.washTradingScore,
+            'isBurnerWallet': result.forensics.blockchain!.isBurnerWallet,
+          } : null,
+          'exif': {
+            'hasGps': result.forensics.exif.hasGps,
+            'hasEdits': result.forensics.exif.hasEdits,
+            'dateMismatch': result.forensics.exif.dateMismatch,
+            'warnings': result.forensics.exif.warnings,
+          },
+          'reverseImage': {
+            'duplicatesFound': result.forensics.reverseImage.duplicatesFound,
+            'isStockPhoto': result.forensics.reverseImage.isStockPhoto,
+            'sources': result.forensics.reverseImage.sources.map((s) => {
+              'title': s.title,
+              'link': s.link,
+              'source': s.source,
+            }).toList(),
+          },
+          'identity': result.forensics.identity != null ? {
+            'platformsFound': result.forensics.identity!.platformsFound,
+            'scamReportsFound': result.forensics.identity!.scamReportsFound,
+            'isDisposableEmail': result.forensics.identity!.isDisposableEmail,
+            'identityConsistent': result.forensics.identity!.identityConsistent,
+            'accountAge': result.forensics.identity!.accountAge,
+            'trustScore': result.forensics.identity!.trustScore,
+            'redFlags': result.forensics.identity!.redFlags,
+            'greenFlags': result.forensics.identity!.greenFlags,
+            'summary': result.forensics.identity!.summary,
+          } : null,
+        },
+      };
+
+      await prefs.setString(cacheKey, jsonEncode(json));
+      print('💾 Trust Score saved to cache');
+
       if (mounted) {
         setState(() {
           _result = result;
           _isLoading = false;
+          _isFromCache = false;
         });
       }
     } catch (e) {
@@ -99,9 +205,17 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
     }
   }
 
+  /// Manual refresh - clear cache and fetch new data
+  Future<void> _refreshTrustScore() async {
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = _getCacheKey();
+    await prefs.remove(cacheKey);
+    await _fetchFromAPI();
+  }
+
   Future<void> _startDeepInvestigation() async {
     if (_isInvestigating) return;
-    
+
     setState(() {
       _isInvestigating = true;
       _investigationError = null;
@@ -123,7 +237,7 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
           _investigationResult = result;
           _isInvestigating = false;
         });
-        
+
         // Show results dialog
         _showInvestigationResultsDialog();
       }
@@ -134,7 +248,7 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
           _investigationError = e.toString();
           _isInvestigating = false;
         });
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Investigation failed: ${e.toString().split(':').last}'),
@@ -174,7 +288,7 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            
+
             // Header
             Padding(
               padding: const EdgeInsets.all(20),
@@ -184,7 +298,7 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [AppTheme.primaryColor, AppTheme.secondaryColor],
+                        colors: [Color(0xFF2196F3), Color(0xFF1976D2)],
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -199,16 +313,16 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Deep Investigation Complete',
-                          style: TextStyle(
+                          style: GoogleFonts.urbanist(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
                           data.charityName,
-                          style: TextStyle(
+                          style: GoogleFonts.urbanist(
                             fontSize: 13,
                             color: Colors.grey[600],
                           ),
@@ -225,7 +339,7 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
                     ),
                     child: Text(
                       '${data.overallRiskLevel} RISK',
-                      style: TextStyle(
+                      style: GoogleFonts.urbanist(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                         color: riskColor,
@@ -235,9 +349,9 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
                 ],
               ),
             ),
-            
+
             const Divider(height: 1),
-            
+
             // Content
             Expanded(
               child: SingleChildScrollView(
@@ -257,8 +371,8 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Icon(
-                            data.overallRiskLevel == 'LOW' 
-                                ? Icons.verified_rounded 
+                            data.overallRiskLevel == 'LOW'
+                                ? Icons.verified_rounded
                                 : Icons.warning_rounded,
                             color: riskColor,
                             size: 24,
@@ -267,7 +381,7 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
                           Expanded(
                             child: Text(
                               data.recommendation,
-                              style: TextStyle(
+                              style: GoogleFonts.urbanist(
                                 fontSize: 14,
                                 color: Colors.grey[800],
                                 height: 1.5,
@@ -277,89 +391,89 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
                         ],
                       ),
                     ),
-                    
+
                     const SizedBox(height: 24),
-                    
+
                     // Registration Status
                     if (data.registrationStatus != null) ...[
                       _buildSectionTitle('Registration Status'),
                       _buildInfoCard(
-                        icon: data.registrationStatus!.isRegistered 
-                            ? Icons.verified_outlined 
+                        icon: data.registrationStatus!.isRegistered
+                            ? Icons.verified_outlined
                             : Icons.cancel_outlined,
-                        iconColor: data.registrationStatus!.isRegistered 
-                            ? Colors.green 
+                        iconColor: data.registrationStatus!.isRegistered
+                            ? Colors.green
                             : Colors.red,
-                        title: data.registrationStatus!.isRegistered 
-                            ? 'Registered Organization' 
+                        title: data.registrationStatus!.isRegistered
+                            ? 'Registered Organization'
                             : 'Not Registered',
-                        subtitle: data.registrationStatus!.registryName ?? 
+                        subtitle: data.registrationStatus!.registryName ??
                             'No registry information',
                         detail: data.registrationStatus!.registrationNumber,
                       ),
                     ],
-                    
+
                     // Fraud Indicators
                     if (data.fraudIndicators != null) ...[
                       const SizedBox(height: 20),
                       _buildSectionTitle('Fraud Indicators'),
                       _buildInfoCard(
-                        icon: data.fraudIndicators!.scamReportsFound 
-                            ? Icons.dangerous_rounded 
+                        icon: data.fraudIndicators!.scamReportsFound
+                            ? Icons.dangerous_rounded
                             : Icons.shield_rounded,
-                        iconColor: data.fraudIndicators!.scamReportsFound 
-                            ? Colors.red 
+                        iconColor: data.fraudIndicators!.scamReportsFound
+                            ? Colors.red
                             : Colors.green,
-                        title: data.fraudIndicators!.scamReportsFound 
-                            ? 'Scam Reports Found!' 
+                        title: data.fraudIndicators!.scamReportsFound
+                            ? 'Scam Reports Found!'
                             : 'No Scam Reports',
                         subtitle: data.fraudIndicators!.warningSigns.isNotEmpty
                             ? data.fraudIndicators!.warningSigns.join(', ')
                             : 'No warning signs detected',
                       ),
                     ],
-                    
+
                     // Financial Transparency
                     if (data.financialTransparency != null) ...[
                       const SizedBox(height: 20),
                       _buildSectionTitle('Financial Transparency'),
                       _buildInfoCard(
-                        icon: data.financialTransparency!.hasPublicReports 
-                            ? Icons.article_outlined 
+                        icon: data.financialTransparency!.hasPublicReports
+                            ? Icons.article_outlined
                             : Icons.visibility_off_outlined,
-                        iconColor: data.financialTransparency!.hasPublicReports 
-                            ? Colors.green 
+                        iconColor: data.financialTransparency!.hasPublicReports
+                            ? Colors.green
                             : Colors.orange,
-                        title: data.financialTransparency!.hasPublicReports 
-                            ? 'Public Reports Available' 
+                        title: data.financialTransparency!.hasPublicReports
+                            ? 'Public Reports Available'
                             : 'No Public Reports',
-                        subtitle: data.financialTransparency!.notes ?? 
+                        subtitle: data.financialTransparency!.notes ??
                             'No additional notes',
                         detail: data.financialTransparency!.lastReportYear != null
                             ? 'Last report: ${data.financialTransparency!.lastReportYear}'
                             : null,
                       ),
                     ],
-                    
+
                     // Cost Analysis
                     if (data.costAnalysis != null) ...[
                       const SizedBox(height: 20),
                       _buildSectionTitle('Cost Analysis'),
                       _buildInfoCard(
-                        icon: data.costAnalysis!.claimedAmountReasonable 
-                            ? Icons.check_circle_outline 
+                        icon: data.costAnalysis!.claimedAmountReasonable
+                            ? Icons.check_circle_outline
                             : Icons.error_outline,
-                        iconColor: data.costAnalysis!.claimedAmountReasonable 
-                            ? Colors.green 
+                        iconColor: data.costAnalysis!.claimedAmountReasonable
+                            ? Colors.green
                             : Colors.orange,
-                        title: data.costAnalysis!.claimedAmountReasonable 
-                            ? 'Reasonable Amount' 
+                        title: data.costAnalysis!.claimedAmountReasonable
+                            ? 'Reasonable Amount'
                             : 'Amount Needs Review',
-                        subtitle: data.costAnalysis!.marketRateComparison ?? 
+                        subtitle: data.costAnalysis!.marketRateComparison ??
                             'No market comparison available',
                       ),
                     ],
-                    
+
                     // Sources
                     if (data.sources.isNotEmpty) ...[
                       const SizedBox(height: 20),
@@ -390,16 +504,16 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
                                     children: [
                                       Text(
                                         source.title,
-                                        style: const TextStyle(
+                                        style: GoogleFonts.urbanist(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600,
-                                          color: AppTheme.primaryColor,
+                                          color: const Color(0xFF2196F3),
                                         ),
                                       ),
                                       if (source.relevance != null)
                                         Text(
                                           source.relevance!,
-                                          style: TextStyle(
+                                          style: GoogleFonts.urbanist(
                                             fontSize: 11,
                                             color: Colors.grey[600],
                                           ),
@@ -416,7 +530,7 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
                         ),
                       )),
                     ],
-                    
+
                     const SizedBox(height: 20),
                   ],
                 ),
@@ -433,7 +547,7 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
       padding: const EdgeInsets.only(bottom: 12),
       child: Text(
         title,
-        style: const TextStyle(
+        style: GoogleFonts.urbanist(
           fontSize: 15,
           fontWeight: FontWeight.bold,
           color: Colors.black87,
@@ -474,7 +588,7 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: GoogleFonts.urbanist(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -482,7 +596,7 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style: TextStyle(
+                  style: GoogleFonts.urbanist(
                     fontSize: 12,
                     color: Colors.grey[600],
                     height: 1.4,
@@ -492,10 +606,9 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
                   const SizedBox(height: 4),
                   Text(
                     detail,
-                    style: TextStyle(
+                    style: GoogleFonts.urbanist(
                       fontSize: 11,
                       color: Colors.grey[500],
-                      fontFamily: 'monospace',
                     ),
                   ),
                 ],
@@ -528,8 +641,8 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
         child: _isLoading
             ? _buildLoadingState()
             : _error != null
-                ? _buildErrorState()
-                : _buildResultState(),
+            ? _buildErrorState()
+            : _buildResultState(),
       ),
     );
   }
@@ -544,8 +657,8 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  AppTheme.primaryColor.withOpacity(0.1),
-                  AppTheme.secondaryColor.withOpacity(0.1),
+                  const Color(0xFF2196F3).withOpacity(0.1),
+                  const Color(0xFF1976D2).withOpacity(0.1),
                 ],
               ),
               borderRadius: BorderRadius.circular(16),
@@ -555,7 +668,7 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
               height: 24,
               child: CircularProgressIndicator(
                 strokeWidth: 2.5,
-                valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2196F3)),
               ),
             ),
           ),
@@ -564,9 +677,9 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'AI Trust Analysis',
-                  style: TextStyle(
+                  style: GoogleFonts.urbanist(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -574,7 +687,7 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
                 const SizedBox(height: 4),
                 Text(
                   'Analyzing campaign authenticity...',
-                  style: TextStyle(
+                  style: GoogleFonts.urbanist(
                     fontSize: 13,
                     color: Colors.grey[600],
                   ),
@@ -609,9 +722,9 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'AI Trust Analysis',
-                  style: TextStyle(
+                  style: GoogleFonts.urbanist(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -619,7 +732,7 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
                 const SizedBox(height: 2),
                 Text(
                   'Unable to analyze',
-                  style: TextStyle(
+                  style: GoogleFonts.urbanist(
                     fontSize: 12,
                     color: Colors.grey[500],
                   ),
@@ -628,11 +741,22 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
             ),
           ),
           TextButton(
-            onPressed: _fetchTrustScore,
+            onPressed: _refreshTrustScore,
             style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              backgroundColor: const Color(0xFF2196F3),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
-            child: const Text('Retry'),
+            child: Text(
+              'Retry',
+              style: GoogleFonts.urbanist(
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+            ),
           ),
         ],
       ),
@@ -642,14 +766,15 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
   Widget _buildResultState() {
     final data = _result!.data;
     final verdictColor = Color(ForensicResult.getVerdictColor(data.verdict));
-    
+
     return Container(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with score
+          // Header with score - LAYOUT DIPERBAIKI
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Score Circle
               Container(
@@ -676,7 +801,7 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
                     children: [
                       Text(
                         '${data.score}',
-                        style: TextStyle(
+                        style: GoogleFonts.urbanist(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: verdictColor,
@@ -684,7 +809,7 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
                       ),
                       Text(
                         '/100',
-                        style: TextStyle(
+                        style: GoogleFonts.urbanist(
                           fontSize: 10,
                           color: verdictColor.withOpacity(0.7),
                           fontWeight: FontWeight.w500,
@@ -694,114 +819,162 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
-              
-              // Title and verdict
+              const SizedBox(width: 12),
+
+              // Title, verdict, and badges
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Title dengan refresh button
                     Row(
                       children: [
                         const Icon(
                           Icons.shield_rounded,
-                          size: 18,
-                          color: AppTheme.primaryColor,
+                          size: 16,
+                          color: Color(0xFF2196F3),
                         ),
-                        const SizedBox(width: 6),
-                        const Text(
-                          'AI Trust Score',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            'AI Trust Score',
+                            style: GoogleFonts.urbanist(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        // Refresh button dengan teks
+                        GestureDetector(
+                          onTap: _refreshTrustScore,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF2196F3).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.refresh_rounded,
+                                  size: 13,
+                                  color: Color(0xFF2196F3),
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  'Refresh',
+                                  style: GoogleFonts.urbanist(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF2196F3),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: verdictColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: verdictColor.withOpacity(0.3),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            _getVerdictIcon(data.verdict),
-                            size: 14,
-                            color: verdictColor,
+
+                    // Verdict badge dan Gemini AI badge - SEJAJAR
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        // Verdict badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
                           ),
-                          const SizedBox(width: 4),
-                          Text(
-                            data.verdict,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: verdictColor,
+                          decoration: BoxDecoration(
+                            color: verdictColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: verdictColor.withOpacity(0.3),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              
-              // Powered by Gemini badge
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.auto_awesome,
-                      size: 12,
-                      color: Colors.grey[600],
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Gemini AI',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w500,
-                      ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                _getVerdictIcon(data.verdict),
+                                size: 13,
+                                color: verdictColor,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                data.verdict,
+                                style: GoogleFonts.urbanist(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: verdictColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Gemini AI badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: Colors.grey[300]!,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.auto_awesome,
+                                size: 13,
+                                color: Colors.grey[600],
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Gemini AI',
+                                style: GoogleFonts.urbanist(
+                                  fontSize: 11,
+                                  color: Colors.grey[600],
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Summary
           Text(
             data.summary,
-            style: TextStyle(
+            style: GoogleFonts.urbanist(
               fontSize: 13,
               color: Colors.grey[700],
               height: 1.4,
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Evidence indicators
           Wrap(
             spacing: 8,
@@ -824,23 +997,23 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
               ),
             ],
           ),
-          
+
           // Forensics Details Section
           const SizedBox(height: 20),
           _buildForensicsSection(_result!.forensics),
-          
+
           // Deep investigation section - show for suspicious/fraudulent verdicts
           if (_result!.data.verdict != 'CREDIBLE' || _investigationResult != null) ...[
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: _investigationResult != null 
+                color: _investigationResult != null
                     ? Colors.green.withOpacity(0.1)
                     : Colors.amber.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: _investigationResult != null 
+                  color: _investigationResult != null
                       ? Colors.green.withOpacity(0.3)
                       : Colors.amber.withOpacity(0.3),
                 ),
@@ -851,23 +1024,23 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
                   Row(
                     children: [
                       Icon(
-                        _investigationResult != null 
+                        _investigationResult != null
                             ? Icons.fact_check_rounded
                             : Icons.info_outline,
                         size: 18,
-                        color: _investigationResult != null 
+                        color: _investigationResult != null
                             ? Colors.green
                             : Colors.amber,
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          _investigationResult != null 
+                          _investigationResult != null
                               ? 'Deep investigation completed'
                               : 'Deep investigation recommended',
-                          style: TextStyle(
+                          style: GoogleFonts.urbanist(
                             fontSize: 12,
-                            color: _investigationResult != null 
+                            color: _investigationResult != null
                                 ? Colors.green[800]
                                 : Colors.amber[800],
                             fontWeight: FontWeight.w500,
@@ -880,41 +1053,41 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: _isInvestigating 
-                          ? null 
-                          : (_investigationResult != null 
-                              ? _showInvestigationResultsDialog 
-                              : _startDeepInvestigation),
+                      onPressed: _isInvestigating
+                          ? null
+                          : (_investigationResult != null
+                          ? _showInvestigationResultsDialog
+                          : _startDeepInvestigation),
                       icon: _isInvestigating
                           ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            )
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
                           : Icon(
-                              _investigationResult != null 
-                                  ? Icons.visibility_outlined 
-                                  : Icons.search_rounded,
-                              size: 18,
-                            ),
+                        _investigationResult != null
+                            ? Icons.visibility_outlined
+                            : Icons.search_rounded,
+                        size: 18,
+                      ),
                       label: Text(
                         _isInvestigating
                             ? 'Investigating...'
-                            : (_investigationResult != null 
-                                ? 'View Results' 
-                                : 'Start Investigation'),
-                        style: const TextStyle(
+                            : (_investigationResult != null
+                            ? 'View Results'
+                            : 'Start Investigation'),
+                        style: GoogleFonts.urbanist(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _investigationResult != null 
+                        backgroundColor: _investigationResult != null
                             ? Colors.green
-                            : AppTheme.primaryColor,
+                            : const Color(0xFF2196F3),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
@@ -937,13 +1110,13 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: verified 
-            ? Colors.green.withOpacity(0.1) 
+        color: verified
+            ? Colors.green.withOpacity(0.1)
             : Colors.grey.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: verified 
-              ? Colors.green.withOpacity(0.3) 
+          color: verified
+              ? Colors.green.withOpacity(0.3)
               : Colors.grey.withOpacity(0.3),
         ),
       ),
@@ -958,7 +1131,7 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
           const SizedBox(width: 4),
           Text(
             label,
-            style: TextStyle(
+            style: GoogleFonts.urbanist(
               fontSize: 11,
               fontWeight: FontWeight.w600,
               color: verified ? Colors.green[700] : Colors.grey[600],
@@ -992,16 +1165,16 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [AppTheme.primaryColor, AppTheme.secondaryColor],
+                    colors: [Color(0xFF2196F3), Color(0xFF1976D2)],
                   ),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(Icons.biotech_rounded, color: Colors.white, size: 18),
               ),
               const SizedBox(width: 12),
-              const Text(
+              Text(
                 'Forensic Analysis',
-                style: TextStyle(
+                style: GoogleFonts.urbanist(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -1009,7 +1182,7 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
             ],
           ),
           const SizedBox(height: 16),
-          
+
           // Blockchain Forensics
           if (forensics.blockchain != null) ...[
             _buildForensicItem(
@@ -1041,7 +1214,7 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
             ),
             const SizedBox(height: 12),
           ],
-          
+
           // EXIF Analysis
           _buildForensicItem(
             icon: Icons.photo_camera_outlined,
@@ -1055,7 +1228,7 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
             warnings: forensics.exif.warnings,
           ),
           const SizedBox(height: 12),
-          
+
           // Reverse Image
           _buildForensicItem(
             icon: Icons.image_search_outlined,
@@ -1074,7 +1247,7 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
             ],
             isGood: !forensics.reverseImage.hasIssues,
           ),
-          
+
           // Identity OSINT
           if (forensics.identity != null) ...[
             const SizedBox(height: 12),
@@ -1145,7 +1318,7 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
               const SizedBox(width: 8),
               Text(
                 title,
-                style: TextStyle(
+                style: GoogleFonts.urbanist(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: isGood ? Colors.green[700] : Colors.orange[700],
@@ -1177,7 +1350,7 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
                   Expanded(
                     child: Text(
                       w,
-                      style: TextStyle(fontSize: 11, color: Colors.orange[700]),
+                      style: GoogleFonts.urbanist(fontSize: 11, color: Colors.orange[700]),
                     ),
                   ),
                 ],
@@ -1198,7 +1371,7 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
                 ),
                 child: Text(
                   '✓ $f',
-                  style: TextStyle(fontSize: 10, color: Colors.green[700]),
+                  style: GoogleFonts.urbanist(fontSize: 10, color: Colors.green[700]),
                 ),
               )).toList(),
             ),
@@ -1217,7 +1390,7 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
                 ),
                 child: Text(
                   '⚠ $f',
-                  style: TextStyle(fontSize: 10, color: Colors.red[700]),
+                  style: GoogleFonts.urbanist(fontSize: 10, color: Colors.red[700]),
                 ),
               )).toList(),
             ),
@@ -1239,11 +1412,11 @@ class _TrustScoreCardState extends State<TrustScoreCard> {
         children: [
           Text(
             '${detail.label}: ',
-            style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+            style: GoogleFonts.urbanist(fontSize: 11, color: Colors.grey[600]),
           ),
           Text(
             detail.value,
-            style: TextStyle(
+            style: GoogleFonts.urbanist(
               fontSize: 11,
               fontWeight: FontWeight.w600,
               color: detail.isGood ? Colors.green[700] : Colors.grey[700],

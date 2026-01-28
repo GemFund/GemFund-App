@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../config/app_theme.dart';
 import '../services/user_profile_service.dart';
 import '../services/wallet_service.dart';
@@ -16,10 +17,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _fullNameController = TextEditingController();
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
-  
+
   final UserProfileService _profileService = UserProfileService();
   final WalletService _walletService = WalletService();
-  
+
   bool _isLoading = true;
   bool _isSaving = false;
   String? _walletAddress;
@@ -53,7 +54,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       });
 
       final profile = await _profileService.getProfile(address);
-      
+
       if (mounted) {
         setState(() {
           _currentProfile = profile;
@@ -68,8 +69,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to load profile: $e'),
-            backgroundColor: Colors.red,
+            content: Text(
+              'Failed to load profile: $e',
+              style: GoogleFonts.urbanist(),
+            ),
+            backgroundColor: const Color(0xFFEF5350),
           ),
         );
       }
@@ -86,7 +90,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     });
 
     try {
-      // Check username availability
       final username = _usernameController.text.trim();
       if (username.isNotEmpty) {
         final isAvailable = await _profileService.isUsernameAvailable(
@@ -102,15 +105,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         }
       }
 
-      // Create or update profile
       final profile = UserProfile(
         walletAddress: _walletAddress!,
-        fullName: _fullNameController.text.trim().isEmpty 
-            ? null 
+        fullName: _fullNameController.text.trim().isEmpty
+            ? null
             : _fullNameController.text.trim(),
         username: username.isEmpty ? null : username.toLowerCase(),
-        email: _emailController.text.trim().isEmpty 
-            ? null 
+        email: _emailController.text.trim().isEmpty
+            ? null
             : _emailController.text.trim(),
       );
 
@@ -118,25 +120,31 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Row(
               children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 12),
-                Text('Profile saved successfully!'),
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 12),
+                Text(
+                  'Profile saved successfully!',
+                  style: GoogleFonts.urbanist(),
+                ),
               ],
             ),
-            backgroundColor: Colors.green,
+            backgroundColor: const Color(0xFF43A047),
           ),
         );
-        Navigator.pop(context, true); // Return true to indicate profile was updated
+        Navigator.pop(context, true);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to save: $e'),
-            backgroundColor: Colors.red,
+            content: Text(
+              'Failed to save: $e',
+              style: GoogleFonts.urbanist(),
+            ),
+            backgroundColor: const Color(0xFFEF5350),
           ),
         );
       }
@@ -150,242 +158,266 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0,
+        backgroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black87),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Edit Profile',
-          style: TextStyle(
-            color: Colors.black87,
+          style: GoogleFonts.urbanist(
+            fontSize: 20,
             fontWeight: FontWeight.bold,
+            color: Colors.black87,
           ),
         ),
         centerTitle: true,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF42A5F5)))
           : SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Profile Avatar
-                    FadeInDown(
-                      duration: const Duration(milliseconds: 400),
-                      child: Center(
-                        child: Container(
-                          width: 100,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [AppTheme.primaryColor, AppTheme.secondaryColor],
-                            ),
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppTheme.primaryColor.withOpacity(0.3),
-                                blurRadius: 20,
-                                offset: const Offset(0, 10),
-                              ),
-                            ],
-                          ),
-                          child: Center(
-                            child: Text(
-                              _getInitials(),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 32,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.all(20),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              FadeInDown(
+                duration: const Duration(milliseconds: 400),
+                child: Center(
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
+                      ),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF42A5F5).withOpacity(0.4),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Text(
+                        _getInitials(),
+                        style: GoogleFonts.urbanist(
+                          color: Colors.white,
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                    
-                    const SizedBox(height: 32),
-                    
-                    // Full Name Field
-                    FadeInUp(
-                      delay: const Duration(milliseconds: 100),
-                      duration: const Duration(milliseconds: 400),
-                      child: _buildTextField(
-                        controller: _fullNameController,
-                        label: 'Full Name',
-                        hint: 'Enter your full name',
-                        icon: Icons.person_outline,
-                        textCapitalization: TextCapitalization.words,
-                      ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
+              FadeInUp(
+                delay: const Duration(milliseconds: 100),
+                duration: const Duration(milliseconds: 400),
+                child: _buildTextField(
+                  controller: _fullNameController,
+                  label: 'Full Name',
+                  hint: 'Enter your full name',
+                  icon: Icons.person_outline,
+                  textCapitalization: TextCapitalization.words,
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              FadeInUp(
+                delay: const Duration(milliseconds: 200),
+                duration: const Duration(milliseconds: 400),
+                child: _buildTextField(
+                  controller: _usernameController,
+                  label: 'Username',
+                  hint: 'Choose a unique username',
+                  icon: Icons.alternate_email,
+                  prefix: '@',
+                  errorText: _usernameError,
+                  validator: (value) {
+                    if (value != null && value.isNotEmpty) {
+                      if (value.length < 3) {
+                        return 'Username must be at least 3 characters';
+                      }
+                      if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(value)) {
+                        return 'Only letters, numbers, and underscores';
+                      }
+                    }
+                    return null;
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              FadeInUp(
+                delay: const Duration(milliseconds: 300),
+                duration: const Duration(milliseconds: 400),
+                child: _buildTextField(
+                  controller: _emailController,
+                  label: 'Email',
+                  hint: 'Enter your email address',
+                  icon: Icons.email_outlined,
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    if (value != null && value.isNotEmpty) {
+                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                        return 'Enter a valid email address';
+                      }
+                    }
+                    return null;
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              FadeInUp(
+                delay: const Duration(milliseconds: 400),
+                duration: const Duration(milliseconds: 400),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFE3F2FD), Color(0xFFBBDEFB)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                    
-                    const SizedBox(height: 20),
-                    
-                    // Username Field
-                    FadeInUp(
-                      delay: const Duration(milliseconds: 200),
-                      duration: const Duration(milliseconds: 400),
-                      child: _buildTextField(
-                        controller: _usernameController,
-                        label: 'Username',
-                        hint: 'Choose a unique username',
-                        icon: Icons.alternate_email,
-                        prefix: '@',
-                        errorText: _usernameError,
-                        validator: (value) {
-                          if (value != null && value.isNotEmpty) {
-                            if (value.length < 3) {
-                              return 'Username must be at least 3 characters';
-                            }
-                            if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(value)) {
-                              return 'Only letters, numbers, and underscores';
-                            }
-                          }
-                          return null;
-                        },
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF64B5F6).withOpacity(0.2),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
                       ),
-                    ),
-                    
-                    const SizedBox(height: 20),
-                    
-                    // Email Field
-                    FadeInUp(
-                      delay: const Duration(milliseconds: 300),
-                      duration: const Duration(milliseconds: 400),
-                      child: _buildTextField(
-                        controller: _emailController,
-                        label: 'Email',
-                        hint: 'Enter your email address',
-                        icon: Icons.email_outlined,
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (value) {
-                          if (value != null && value.isNotEmpty) {
-                            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                              return 'Enter a valid email address';
-                            }
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // Wallet Address (Read-only)
-                    FadeInUp(
-                      delay: const Duration(milliseconds: 400),
-                      duration: const Duration(milliseconds: 400),
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: Colors.grey[100],
-                          borderRadius: BorderRadius.circular(16),
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Row(
+                        child: const Icon(
+                          Icons.account_balance_wallet_outlined,
+                          color: Color(0xFF1976D2),
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[200],
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(
-                                Icons.account_balance_wallet_outlined,
-                                color: Colors.grey[600],
-                                size: 20,
+                            Text(
+                              'Wallet Address',
+                              style: GoogleFonts.urbanist(
+                                fontSize: 11,
+                                color: const Color(0xFF1976D2),
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Wallet Address',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    _walletAddress != null
-                                        ? '${_walletAddress!.substring(0, 10)}...${_walletAddress!.substring(_walletAddress!.length - 8)}'
-                                        : 'Loading...',
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontFamily: 'monospace',
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
+                            const SizedBox(height: 4),
+                            Text(
+                              _walletAddress != null
+                                  ? '${_walletAddress!.substring(0, 10)}...${_walletAddress!.substring(_walletAddress!.length - 8)}'
+                                  : 'Loading...',
+                              style: GoogleFonts.urbanist(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
                               ),
-                            ),
-                            Icon(
-                              Icons.lock_outline,
-                              color: Colors.grey[400],
-                              size: 18,
                             ),
                           ],
                         ),
                       ),
-                    ),
-                    
-                    const SizedBox(height: 40),
-                    
-                    // Save Button
-                    FadeInUp(
-                      delay: const Duration(milliseconds: 500),
-                      duration: const Duration(milliseconds: 400),
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton(
-                          onPressed: _isSaving ? null : _saveProfile,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primaryColor,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: _isSaving
-                              ? const SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2.5,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                  ),
-                                )
-                              : const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.save_outlined, size: 22),
-                                    SizedBox(width: 10),
-                                    Text(
-                                      'Save Profile',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                        ),
+                      const Icon(
+                        Icons.lock_outline,
+                        color: Color(0xFF1976D2),
+                        size: 18,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
+
+              const SizedBox(height: 40),
+
+              FadeInUp(
+                delay: const Duration(milliseconds: 500),
+                duration: const Duration(milliseconds: 400),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF42A5F5).withOpacity(0.4),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: _isSaving ? null : _saveProfile,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        foregroundColor: Colors.white,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: _isSaving
+                          ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                          : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.save_outlined, size: 22),
+                          const SizedBox(width: 10),
+                          Text(
+                            'Save Profile',
+                            style: GoogleFonts.urbanist(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -417,51 +449,73 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: GoogleFonts.urbanist(
             fontSize: 14,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.bold,
             color: Colors.black87,
           ),
         ),
         const SizedBox(height: 8),
-        TextFormField(
-          controller: controller,
-          keyboardType: keyboardType,
-          textCapitalization: textCapitalization,
-          validator: validator,
-          onChanged: (_) {
-            if (_usernameError != null && label == 'Username') {
-              setState(() => _usernameError = null);
-            }
-          },
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(color: Colors.grey[400]),
-            prefixIcon: Icon(icon, color: Colors.grey[500]),
-            prefixText: prefix,
-            prefixStyle: TextStyle(
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
-            ),
-            errorText: errorText,
-            filled: true,
-            fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: Colors.grey[300]!),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: Colors.grey[300]!),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppTheme.primaryColor, width: 2),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Colors.red),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF64B5F6).withOpacity(0.1),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: TextFormField(
+            controller: controller,
+            keyboardType: keyboardType,
+            textCapitalization: textCapitalization,
+            validator: validator,
+            style: GoogleFonts.urbanist(),
+            onChanged: (_) {
+              if (_usernameError != null && label == 'Username') {
+                setState(() => _usernameError = null);
+              }
+            },
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: GoogleFonts.urbanist(
+                color: Colors.grey.shade400,
+                fontSize: 14,
+              ),
+              prefixIcon: Icon(icon, color: const Color(0xFF1976D2), size: 20),
+              prefixText: prefix,
+              prefixStyle: GoogleFonts.urbanist(
+                color: const Color(0xFF1976D2),
+                fontWeight: FontWeight.w600,
+              ),
+              errorText: errorText,
+              errorStyle: GoogleFonts.urbanist(),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20),
+                borderSide: const BorderSide(color: Color(0xFF42A5F5), width: 2),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20),
+                borderSide: const BorderSide(color: Color(0xFFEF5350)),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20),
+                borderSide: const BorderSide(color: Color(0xFFEF5350), width: 2),
+              ),
             ),
           ),
         ),

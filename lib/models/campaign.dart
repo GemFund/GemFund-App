@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:web3dart/web3dart.dart';
 
 /// Campaign categories for filtering
@@ -31,22 +32,23 @@ extension CampaignCategoryExtension on CampaignCategory {
     }
   }
 
-  String get icon {
+  /// Replaced emoji with Material Icons (professional & scalable)
+  IconData get icon {
     switch (this) {
       case CampaignCategory.medical:
-        return '🏥';
+        return Icons.medical_services;
       case CampaignCategory.education:
-        return '📚';
+        return Icons.school;
       case CampaignCategory.disaster:
-        return '🆘';
+        return Icons.emergency;
       case CampaignCategory.community:
-        return '🤝';
+        return Icons.groups;
       case CampaignCategory.technology:
-        return '💻';
+        return Icons.memory;
       case CampaignCategory.environment:
-        return '🌱';
+        return Icons.eco;
       case CampaignCategory.other:
-        return '📦';
+        return Icons.category;
     }
   }
 }
@@ -62,7 +64,6 @@ class Campaign {
   final String image;
   final List<EthereumAddress> donators;
   final List<BigInt> donations;
-
 
   Campaign({
     required this.id,
@@ -94,46 +95,28 @@ class Campaign {
     );
   }
 
-  // Convert Wei to Ether with proper precision
   double get targetInEther {
     try {
-      // Use double division for better precision
       return target.toInt() / 1e18;
-    } catch (e) {
+    } catch (_) {
       return 0.0;
     }
   }
 
   double get collectedInEther {
     try {
-      // Use double division for better precision
       return amountCollected.toInt() / 1e18;
-    } catch (e) {
+    } catch (_) {
       return 0.0;
     }
   }
 
-  // Calculate percentage with proper handling and precision
   double get progressPercentage {
-    try {
-      // Check if target is zero to avoid division by zero
-      if (targetInEther <= 0) return 0.0;
-      
-      // Calculate percentage with full precision
-      final percentage = (collectedInEther / targetInEther) * 100.0;
-      
-      // Clamp between 0 and 100
-      final clampedPercentage = percentage.clamp(0.0, 100.0);
-      
-      // Return with appropriate precision
-      // Don't round too early - let the UI decide formatting
-      return clampedPercentage;
-    } catch (e) {
-      return 0.0;
-    }
+    if (targetInEther <= 0) return 0.0;
+    final percentage = (collectedInEther / targetInEther) * 100.0;
+    return percentage.clamp(0.0, 100.0);
   }
 
-  // Get progress percentage as string with smart formatting
   String get progressPercentageFormatted {
     if (progressPercentage < 0.01 && progressPercentage > 0) {
       return '<0.01%';
@@ -146,192 +129,76 @@ class Campaign {
     }
   }
 
-  /// Auto-detect category from title and description
+  /// Auto-detect category from title & description
   CampaignCategory get category {
     final text = '$title $description'.toLowerCase();
-    
-    // Medical keywords
-    if (text.contains('hospital') || text.contains('medical') || 
-        text.contains('health') || text.contains('surgery') ||
-        text.contains('cancer') || text.contains('treatment') ||
-        text.contains('doctor') || text.contains('medicine') ||
-        text.contains('sick') || text.contains('disease')) {
+
+    if (text.contains('hospital') ||
+        text.contains('medical') ||
+        text.contains('health') ||
+        text.contains('surgery') ||
+        text.contains('cancer') ||
+        text.contains('treatment') ||
+        text.contains('doctor') ||
+        text.contains('medicine') ||
+        text.contains('disease')) {
       return CampaignCategory.medical;
     }
-    
-    // Education keywords
-    if (text.contains('school') || text.contains('education') ||
-        text.contains('student') || text.contains('university') ||
-        text.contains('scholarship') || text.contains('learning') ||
-        text.contains('tuition') || text.contains('college')) {
+
+    if (text.contains('school') ||
+        text.contains('education') ||
+        text.contains('student') ||
+        text.contains('university') ||
+        text.contains('scholarship') ||
+        text.contains('learning') ||
+        text.contains('college')) {
       return CampaignCategory.education;
     }
-    
-    // Disaster keywords
-    if (text.contains('flood') || text.contains('earthquake') ||
-        text.contains('disaster') || text.contains('emergency') ||
-        text.contains('refugee') || text.contains('relief') ||
-        text.contains('hurricane') || text.contains('fire')) {
+
+    if (text.contains('flood') ||
+        text.contains('earthquake') ||
+        text.contains('disaster') ||
+        text.contains('emergency') ||
+        text.contains('refugee') ||
+        text.contains('relief') ||
+        text.contains('fire')) {
       return CampaignCategory.disaster;
     }
-    
-    // Technology keywords
-    if (text.contains('tech') || text.contains('software') ||
-        text.contains('app') || text.contains('startup') ||
-        text.contains('innovation') || text.contains('digital')) {
+
+    if (text.contains('tech') ||
+        text.contains('software') ||
+        text.contains('app') ||
+        text.contains('startup') ||
+        text.contains('innovation') ||
+        text.contains('digital')) {
       return CampaignCategory.technology;
     }
-    
-    // Environment keywords
-    if (text.contains('environment') || text.contains('climate') ||
-        text.contains('green') || text.contains('sustainable') ||
-        text.contains('nature') || text.contains('conservation')) {
+
+    if (text.contains('environment') ||
+        text.contains('climate') ||
+        text.contains('green') ||
+        text.contains('sustainable') ||
+        text.contains('nature') ||
+        text.contains('conservation')) {
       return CampaignCategory.environment;
     }
-    
-    // Community keywords
-    if (text.contains('community') || text.contains('local') ||
-        text.contains('neighborhood') || text.contains('village') ||
-        text.contains('charity') || text.contains('nonprofit')) {
+
+    if (text.contains('community') ||
+        text.contains('local') ||
+        text.contains('village') ||
+        text.contains('charity') ||
+        text.contains('nonprofit')) {
       return CampaignCategory.community;
     }
-    
+
     return CampaignCategory.other;
   }
 
   bool get isExpired => DateTime.now().isAfter(deadline);
-
-  // Helper to check if campaign has any donations
   bool get hasDonations => donators.isNotEmpty && collectedInEther > 0;
-
-  // Get total number of backers
   int get totalBackers => donators.length;
-
-  // Get days remaining (can be negative if expired)
   int get daysRemaining => deadline.difference(DateTime.now()).inDays;
 
-  // Get human-readable deadline status with countdown
-  String get deadlineStatus {
-    if (isExpired) return 'Ended';
-    
-    final duration = deadline.difference(DateTime.now());
-    final days = duration.inDays;
-    final hours = duration.inHours % 24;
-    
-    if (days == 0 && hours == 0) return 'Ending soon';
-    if (days == 0) return '$hours hours left';
-    if (days == 1 && hours > 0) return '1 day $hours hrs left';
-    if (days == 1) return '1 day left';
-    if (days < 7) return '$days days left';
-    if (days < 30) return '${(days / 7).round()} weeks left';
-    return '${(days / 30).round()} months left';
-  }
-
-  // Get detailed countdown (for campaign detail page)
-  String get countdownDetailed {
-    if (isExpired) return 'Campaign has ended';
-    
-    final duration = deadline.difference(DateTime.now());
-    final days = duration.inDays;
-    final hours = duration.inHours % 24;
-    final minutes = duration.inMinutes % 60;
-    
-    if (days > 0) {
-      return '$days days, $hours hours remaining';
-    } else if (hours > 0) {
-      return '$hours hours, $minutes minutes remaining';
-    } else {
-      return '$minutes minutes remaining';
-    }
-  }
-
-  // Check if campaign is successful (reached target)
   bool get isSuccessful => progressPercentage >= 100;
-
-  // Check if campaign is nearly funded (>= 75%)
   bool get isNearlyFunded => progressPercentage >= 75;
-
-  // Get average donation in ETH
-  double get averageDonation {
-    if (totalBackers == 0) return 0.0;
-    return collectedInEther / totalBackers;
-  }
-
-  // Format ETH with smart precision
-  String formatEth(double value) {
-    if (value == 0) return '0';
-    if (value < 0.0001) return value.toStringAsExponential(2);
-    if (value < 0.01) return value.toStringAsFixed(6);
-    if (value < 1) return value.toStringAsFixed(4);
-    if (value < 100) return value.toStringAsFixed(3);
-    return value.toStringAsFixed(2);
-  }
-
-  // Get collected amount as formatted string
-  String get collectedFormatted => formatEth(collectedInEther);
-
-  // Get target amount as formatted string
-  String get targetFormatted => formatEth(targetInEther);
-
-  @override
-  String toString() {
-    return 'Campaign('
-        'id: $id, '
-        'title: $title, '
-        'collected: $collectedFormatted ETH, '
-        'target: $targetFormatted ETH, '
-        'progress: $progressPercentageFormatted, '
-        'backers: $totalBackers, '
-        'status: ${isExpired ? 'Expired' : 'Active'}'
-        ')';
-  }
-
-  // Create a copy with updated values (useful for state management)
-  Campaign copyWith({
-    BigInt? id,
-    EthereumAddress? owner,
-    String? title,
-    String? description,
-    BigInt? target,
-    DateTime? deadline,
-    BigInt? amountCollected,
-    String? image,
-    List<EthereumAddress>? donators,
-    List<BigInt>? donations,
-  }) {
-    return Campaign(
-      id: id ?? this.id,
-      owner: owner ?? this.owner,
-      title: title ?? this.title,
-      description: description ?? this.description,
-      target: target ?? this.target,
-      deadline: deadline ?? this.deadline,
-      amountCollected: amountCollected ?? this.amountCollected,
-      image: image ?? this.image,
-      donators: donators ?? this.donators,
-      donations: donations ?? this.donations,
-    );
-  }
-
-  // Convert to JSON for debugging or storage
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id.toString(),
-      'owner': owner.hex,
-      'title': title,
-      'description': description,
-      'target': target.toString(),
-      'targetInEther': targetInEther,
-      'deadline': deadline.toIso8601String(),
-      'amountCollected': amountCollected.toString(),
-      'collectedInEther': collectedInEther,
-      'image': image,
-      'donators': donators.map((d) => d.hex).toList(),
-      'donations': donations.map((d) => d.toString()).toList(),
-      'progressPercentage': progressPercentage,
-      'totalBackers': totalBackers,
-      'isExpired': isExpired,
-      'daysRemaining': daysRemaining,
-    };
-  }
 }

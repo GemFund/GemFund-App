@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../config/app_theme.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -21,19 +22,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       icon: Icons.diamond_rounded,
       title: 'Welcome to GemFund',
       description: 'AI-powered decentralized crowdfunding platform with blockchain transparency',
-      gradient: [AppTheme.primaryColor, AppTheme.secondaryColor],
+      useAppIcon: true,
     ),
     OnboardingPage(
       icon: Icons.auto_awesome,
       title: 'AI Trust Score',
       description: 'Powered by Google Gemini AI to detect fraudulent campaigns and protect donors',
-      gradient: [Colors.purple, Colors.deepPurple],
+      useAppIcon: false,
     ),
     OnboardingPage(
       icon: Icons.account_balance_wallet_rounded,
       title: 'Blockchain Security',
       description: 'All donations are secured on Ethereum blockchain with full transparency',
-      gradient: [Colors.teal, Colors.cyan],
+      useAppIcon: false,
     ),
   ];
 
@@ -63,12 +64,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 padding: const EdgeInsets.all(16),
                 child: TextButton(
                   onPressed: _completeOnboarding,
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    backgroundColor: const Color(0xFFE3F2FD),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                   child: Text(
                     'Skip',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                    style: GoogleFonts.urbanist(
+                      color: const Color(0xFF1976D2),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -96,16 +104,28 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(
                   _pages.length,
-                  (index) => AnimatedContainer(
+                      (index) => AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     margin: const EdgeInsets.symmetric(horizontal: 4),
                     width: _currentPage == index ? 32 : 10,
                     height: 10,
                     decoration: BoxDecoration(
-                      color: _currentPage == index
-                          ? AppTheme.primaryColor
-                          : Colors.grey[300],
+                      gradient: _currentPage == index
+                          ? const LinearGradient(
+                        colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
+                      )
+                          : null,
+                      color: _currentPage == index ? null : Colors.grey[300],
                       borderRadius: BorderRadius.circular(5),
+                      boxShadow: _currentPage == index
+                          ? [
+                        BoxShadow(
+                          color: const Color(0xFF42A5F5).withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                          : null,
                     ),
                   ),
                 ),
@@ -115,61 +135,60 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             // Next/Get Started button
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
-              child: SizedBox(
+              child: Container(
                 width: double.infinity,
                 height: 56,
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: _pages[_currentPage].gradient,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: _pages[_currentPage].gradient[0].withOpacity(0.4),
-                        blurRadius: 16,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
                   ),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (_currentPage < _pages.length - 1) {
-                        _pageController.nextPage(
-                          duration: const Duration(milliseconds: 400),
-                          curve: Curves.easeInOut,
-                        );
-                      } else {
-                        _completeOnboarding();
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF42A5F5).withOpacity(0.4),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          _currentPage < _pages.length - 1 ? 'Next' : 'Get Started',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Icon(
-                          _currentPage < _pages.length - 1
-                              ? Icons.arrow_forward_rounded
-                              : Icons.rocket_launch_rounded,
+                  ],
+                ),
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (_currentPage < _pages.length - 1) {
+                      _pageController.nextPage(
+                        duration: const Duration(milliseconds: 400),
+                        curve: Curves.easeInOut,
+                      );
+                    } else {
+                      _completeOnboarding();
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _currentPage < _pages.length - 1 ? 'Next' : 'Get Started',
+                        style: GoogleFonts.urbanist(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(
+                        _currentPage < _pages.length - 1
+                            ? Icons.arrow_forward_rounded
+                            : Icons.rocket_launch_rounded,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -186,31 +205,54 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Animated Icon
+          // Animated Icon or App Logo
           FadeInDown(
             duration: const Duration(milliseconds: 600),
             child: Container(
               width: 160,
               height: 160,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFE3F2FD), Color(0xFFBBDEFB)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: page.gradient,
                 ),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: page.gradient[0].withOpacity(0.3),
-                    blurRadius: 30,
-                    offset: const Offset(0, 10),
+                    color: const Color(0xFF64B5F6).withOpacity(0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
-              child: Icon(
-                page.icon,
-                size: 80,
-                color: Colors.white,
+              child: Center(
+                child: page.useAppIcon
+                    ? Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Image.asset(
+                    'assets/images/icon.png',
+                    fit: BoxFit.contain,
+                  ),
+                )
+                    : Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF64B5F6).withOpacity(0.2),
+                        blurRadius: 12,
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    page.icon,
+                    size: 56,
+                    color: const Color(0xFF1976D2),
+                  ),
+                ),
               ),
             ),
           ),
@@ -222,10 +264,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             duration: const Duration(milliseconds: 600),
             child: Text(
               page.title,
-              style: const TextStyle(
-                fontSize: 28,
+              style: GoogleFonts.urbanist(
+                fontSize: 26,
                 fontWeight: FontWeight.bold,
                 letterSpacing: -0.5,
+                color: Colors.black87,
               ),
               textAlign: TextAlign.center,
             ),
@@ -238,9 +281,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             duration: const Duration(milliseconds: 600),
             child: Text(
               page.description,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
+              style: GoogleFonts.urbanist(
+                fontSize: 15,
+                color: Colors.black54,
                 height: 1.6,
               ),
               textAlign: TextAlign.center,
@@ -256,12 +299,12 @@ class OnboardingPage {
   final IconData icon;
   final String title;
   final String description;
-  final List<Color> gradient;
+  final bool useAppIcon;
 
   OnboardingPage({
     required this.icon,
     required this.title,
     required this.description,
-    required this.gradient,
+    this.useAppIcon = false,
   });
 }

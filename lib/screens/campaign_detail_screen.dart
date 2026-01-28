@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:web3dart/web3dart.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../config/app_theme.dart';
 import '../models/campaign.dart';
 import '../providers/campaign_provider.dart';
@@ -22,11 +23,12 @@ class CampaignDetailScreen extends StatelessWidget {
     final dateFormat = DateFormat('dd MMM yyyy HH:mm');
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Colors.white,
       body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
         slivers: [
           SliverAppBar(
-            expandedHeight: 350,
+            expandedHeight: 300,
             pinned: true,
             stretch: true,
             backgroundColor: Colors.white,
@@ -35,7 +37,7 @@ class CampaignDetailScreen extends StatelessWidget {
               padding: const EdgeInsets.all(8.0),
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
@@ -56,7 +58,7 @@ class CampaignDetailScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(8.0),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
@@ -89,22 +91,20 @@ Dukung di aplikasi GemFund!
             flexibleSpace: FlexibleSpaceBar(
               stretchModes: const [
                 StretchMode.zoomBackground,
-                StretchMode.blurBackground,
               ],
               background: Stack(
                 fit: StackFit.expand,
                 children: [
                   campaign.image.isNotEmpty
                       ? Image.network(
-                          campaign.image,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return _placeholderImage();
-                          },
-                        )
+                    campaign.image,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return _placeholderImage();
+                    },
+                  )
                       : _placeholderImage(),
-                  
-                  // Simple dark overlay at bottom for text readability
+
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -112,13 +112,13 @@ Dukung di aplikasi GemFund!
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
-                          Colors.black.withAlpha(128),
+                          Colors.black.withOpacity(0.5),
                         ],
-                        stops: const [0.5, 1.0],
+                        stops: const [0.6, 1.0],
                       ),
                     ),
                   ),
-                  
+
                   // Status Badge
                   Positioned(
                     top: 70,
@@ -127,31 +127,39 @@ Dukung di aplikasi GemFund!
                       duration: const Duration(milliseconds: 800),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
+                          horizontal: 16,
+                          vertical: 8,
                         ),
                         decoration: BoxDecoration(
-                          color: campaign.isExpired
-                              ? const Color(0xFFDC2626)
-                              : const Color(0xFF2563EB),
+                          gradient: LinearGradient(
+                            colors: campaign.isExpired
+                                ? [const Color(0xFFEF5350), const Color(0xFFE53935)]
+                                : [const Color(0xFF66BB6A), const Color(0xFF43A047)],
+                          ),
                           borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: (campaign.isExpired ? const Color(0xFFEF5350) : const Color(0xFF66BB6A)).withOpacity(0.4),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              campaign.isExpired ? Icons.lock_clock : Icons.bolt,
+                              campaign.isExpired ? Icons.event_busy : Icons.check_circle,
                               color: Colors.white,
-                              size: 18,
+                              size: 16,
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              campaign.isExpired ? 'Expired' : 'Live',
-                              style: const TextStyle(
+                              campaign.isExpired ? 'Ended' : 'Live',
+                              style: GoogleFonts.urbanist(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                                letterSpacing: 0.5,
+                                fontSize: 12,
                               ),
                             ),
                           ],
@@ -170,20 +178,20 @@ Dukung di aplikasi GemFund!
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 16),
-                
+
                 // Title & Owner Card
                 FadeInUp(
                   duration: const Duration(milliseconds: 600),
                   child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 20),
-                    padding: const EdgeInsets.all(24),
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 20,
+                          color: const Color(0xFF64B5F6).withOpacity(0.1),
+                          blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
                       ],
@@ -193,30 +201,32 @@ Dukung di aplikasi GemFund!
                       children: [
                         Text(
                           campaign.title,
-                          style: const TextStyle(
-                            fontSize: 26,
+                          style: GoogleFonts.urbanist(
+                            fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            letterSpacing: -0.5,
+                            color: Colors.black87,
                             height: 1.3,
                           ),
                         ),
-                        const SizedBox(height: 20),
-                        
+                        const SizedBox(height: 16),
+
                         Row(
                           children: [
                             Container(
                               padding: const EdgeInsets.all(2),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF2563EB),
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
+                                ),
                                 shape: BoxShape.circle,
                               ),
                               child: const CircleAvatar(
-                                radius: 22,
+                                radius: 20,
                                 backgroundColor: Colors.white,
                                 child: Icon(
                                   Icons.person_outline,
-                                  color: Color(0xFF2563EB),
-                                  size: 22,
+                                  color: Color(0xFF1976D2),
+                                  size: 20,
                                 ),
                               ),
                             ),
@@ -227,8 +237,8 @@ Dukung di aplikasi GemFund!
                                 children: [
                                   Text(
                                     'Campaign Creator',
-                                    style: TextStyle(
-                                      fontSize: 12,
+                                    style: GoogleFonts.urbanist(
+                                      fontSize: 11,
                                       color: Colors.grey[600],
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -236,10 +246,9 @@ Dukung di aplikasi GemFund!
                                   const SizedBox(height: 2),
                                   Text(
                                     '${campaign.owner.hex.substring(0, 10)}...${campaign.owner.hex.substring(campaign.owner.hex.length - 8)}',
-                                    style: const TextStyle(
+                                    style: GoogleFonts.jetBrainsMono(
                                       fontWeight: FontWeight.w600,
-                                      fontSize: 13,
-                                      fontFamily: 'monospace',
+                                      fontSize: 12,
                                     ),
                                   ),
                                 ],
@@ -247,29 +256,29 @@ Dukung di aplikasi GemFund!
                             ),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
+                                horizontal: 10,
+                                vertical: 5,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFEFF6FF),
+                                color: const Color(0xFFE3F2FD),
                                 borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: const Color(0xFF2563EB).withAlpha(51)),
+                                border: Border.all(color: const Color(0xFF90CAF9)),
                               ),
-                              child: const Row(
+                              child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(
+                                  const Icon(
                                     Icons.verified,
-                                    size: 14,
-                                    color: Color(0xFF2563EB),
+                                    size: 12,
+                                    color: Color(0xFF1976D2),
                                   ),
-                                  SizedBox(width: 4),
+                                  const SizedBox(width: 4),
                                   Text(
                                     'Verified',
-                                    style: TextStyle(
-                                      fontSize: 11,
+                                    style: GoogleFonts.urbanist(
+                                      fontSize: 10,
                                       fontWeight: FontWeight.bold,
-                                      color: Color(0xFF2563EB),
+                                      color: const Color(0xFF1976D2),
                                     ),
                                   ),
                                 ],
@@ -284,8 +293,7 @@ Dukung di aplikasi GemFund!
 
                 const SizedBox(height: 16),
 
-                // AI Trust Score Card - Powered by Gemini AI
-                // Fetch creator profile for identity OSINT
+                // AI Trust Score Card
                 FutureBuilder<UserProfile?>(
                   future: UserProfileService().getProfile(campaign.owner.hexEip55),
                   builder: (context, snapshot) {
@@ -303,23 +311,26 @@ Dukung di aplikasi GemFund!
                   },
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
 
-                // Premium Progress Card - Simple Blue & White
+                // Progress Card
                 FadeInUp(
                   delay: const Duration(milliseconds: 200),
                   duration: const Duration(milliseconds: 600),
                   child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 20),
-                    padding: const EdgeInsets.all(24),
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFE3F2FD), Color(0xFFBBDEFB)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xFFE5E7EB)),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withAlpha(13),
-                          blurRadius: 10,
+                          color: const Color(0xFF64B5F6).withOpacity(0.2),
+                          blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
                       ],
@@ -336,54 +347,66 @@ Dukung di aplikasi GemFund!
                                 children: [
                                   Text(
                                     'Total Raised',
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
+                                    style: GoogleFonts.urbanist(
+                                      color: const Color(0xFF1976D2),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
                                     '${campaign.collectedInEther.toStringAsFixed(4)} ETH',
-                                    style: const TextStyle(
-                                      color: Color(0xFF1F2937),
-                                      fontSize: 28,
+                                    style: GoogleFonts.urbanist(
+                                      color: const Color(0xFF1976D2),
+                                      fontSize: 26,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     'of ${campaign.targetInEther.toStringAsFixed(2)} ETH goal',
-                                    style: TextStyle(
-                                      color: Colors.grey[500],
-                                      fontSize: 13,
+                                    style: GoogleFonts.urbanist(
+                                      color: Colors.grey[700],
+                                      fontSize: 12,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.all(16),
+                              padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFEFF6FF),
+                                gradient: LinearGradient(
+                                  colors: campaign.progressPercentage >= 100
+                                      ? [const Color(0xFF66BB6A), const Color(0xFF43A047)]
+                                      : [const Color(0xFF42A5F5), const Color(0xFF1E88E5)],
+                                ),
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: const Color(0xFF2563EB).withAlpha(51)),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: (campaign.progressPercentage >= 100
+                                        ? const Color(0xFF66BB6A)
+                                        : const Color(0xFF42A5F5)).withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
                               ),
                               child: Column(
                                 children: [
                                   Text(
                                     '${campaign.progressPercentage.toStringAsFixed(0)}%',
-                                    style: const TextStyle(
-                                      color: Color(0xFF2563EB),
-                                      fontSize: 24,
+                                    style: GoogleFonts.urbanist(
+                                      color: Colors.white,
+                                      fontSize: 22,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  const Text(
+                                  Text(
                                     'funded',
-                                    style: TextStyle(
-                                      color: Color(0xFF2563EB),
-                                      fontSize: 11,
+                                    style: GoogleFonts.urbanist(
+                                      color: Colors.white,
+                                      fontSize: 10,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -393,75 +416,82 @@ Dukung di aplikasi GemFund!
                           ],
                         ),
                         const SizedBox(height: 20),
-                        
-                        // Simple Progress Bar
-                        Container(
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFE5E7EB),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
+
+                        // Progress Bar
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Container(
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.5),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                             child: LinearProgressIndicator(
                               value: (campaign.progressPercentage / 100).clamp(0.0, 1.0),
                               backgroundColor: Colors.transparent,
                               valueColor: AlwaysStoppedAnimation<Color>(
                                 campaign.progressPercentage >= 100
-                                    ? const Color(0xFF10B981)
-                                    : const Color(0xFF2563EB),
+                                    ? const Color(0xFF43A047)
+                                    : const Color(0xFF1976D2),
                               ),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 24),
-                        
+                        const SizedBox(height: 20),
+
                         // Stats Row
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _ModernInfoItem(
-                                icon: Icons.people_outline,
-                                label: 'Backers',
-                                value: campaign.donators.length.toString(),
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: _InfoItem(
+                                  icon: Icons.people_outline,
+                                  label: 'Backers',
+                                  value: campaign.donators.length.toString(),
+                                ),
                               ),
-                            ),
-                            Container(
-                              width: 1,
-                              height: 40,
-                              color: const Color(0xFFE5E7EB),
-                            ),
-                            Expanded(
-                              child: _ModernInfoItem(
-                                icon: Icons.access_time_outlined,
-                                label: 'Days Left',
-                                value: campaign.isExpired
-                                    ? 'Ended'
-                                    : campaign.deadline.difference(DateTime.now()).inDays.toString(),
+                              Container(
+                                width: 1,
+                                height: 40,
+                                color: Colors.grey[300],
                               ),
-                            ),
-                            Container(
-                              width: 1,
-                              height: 40,
-                              color: const Color(0xFFE5E7EB),
-                            ),
-                            Expanded(
-                              child: _ModernInfoItem(
-                                icon: Icons.trending_up,
-                                label: 'Goal',
-                                value: '${campaign.targetInEther.toStringAsFixed(1)} ETH',
+                              Expanded(
+                                child: _InfoItem(
+                                  icon: Icons.access_time_outlined,
+                                  label: 'Days Left',
+                                  value: campaign.isExpired
+                                      ? 'Ended'
+                                      : campaign.deadline.difference(DateTime.now()).inDays.toString(),
+                                ),
                               ),
-                            ),
-                          ],
+                              Container(
+                                width: 1,
+                                height: 40,
+                                color: Colors.grey[300],
+                              ),
+                              Expanded(
+                                child: _InfoItem(
+                                  icon: Icons.trending_up,
+                                  label: 'Goal',
+                                  value: '${campaign.targetInEther.toStringAsFixed(1)} ETH',
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
 
-                // Modern Tabs
+                // Tabs
                 DefaultTabController(
                   length: 3,
                   child: Column(
@@ -470,37 +500,38 @@ Dukung di aplikasi GemFund!
                         delay: const Duration(milliseconds: 400),
                         duration: const Duration(milliseconds: 600),
                         child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 20),
-                          padding: const EdgeInsets.all(6),
+                          margin: const EdgeInsets.symmetric(horizontal: 16),
+                          padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.03),
-                                blurRadius: 10,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
+                            color: const Color(0xFFE3F2FD),
+                            borderRadius: BorderRadius.circular(16),
                           ),
                           child: TabBar(
                             indicator: BoxDecoration(
-                              color: const Color(0xFF2563EB),
-                              borderRadius: BorderRadius.circular(14),
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF42A5F5).withOpacity(0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                             ),
                             indicatorSize: TabBarIndicatorSize.tab,
                             labelColor: Colors.white,
-                            unselectedLabelColor: Colors.grey[600],
-                            labelStyle: const TextStyle(
+                            unselectedLabelColor: const Color(0xFF1976D2),
+                            labelStyle: GoogleFonts.urbanist(
                               fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                              letterSpacing: 0.3,
+                              fontSize: 13,
                             ),
-                            unselectedLabelStyle: const TextStyle(
+                            unselectedLabelStyle: GoogleFonts.urbanist(
                               fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                              letterSpacing: 0.3,
+                              fontSize: 13,
                             ),
+                            dividerColor: Colors.transparent,
                             splashFactory: NoSplash.splashFactory,
                             overlayColor: WidgetStateProperty.all(Colors.transparent),
                             tabs: const [
@@ -508,7 +539,7 @@ Dukung di aplikasi GemFund!
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(Icons.auto_stories_outlined, size: 18),
+                                    Icon(Icons.auto_stories_outlined, size: 16),
                                     SizedBox(width: 6),
                                     Text('Story'),
                                   ],
@@ -518,7 +549,7 @@ Dukung di aplikasi GemFund!
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(Icons.notifications_none_outlined, size: 18),
+                                    Icon(Icons.notifications_none_outlined, size: 16),
                                     SizedBox(width: 6),
                                     Text('Updates'),
                                   ],
@@ -528,7 +559,7 @@ Dukung di aplikasi GemFund!
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(Icons.people_outline, size: 18),
+                                    Icon(Icons.people_outline, size: 16),
                                     SizedBox(width: 6),
                                     Text('Backers'),
                                   ],
@@ -538,7 +569,7 @@ Dukung di aplikasi GemFund!
                           ),
                         ),
                       ),
-                      
+
                       SizedBox(
                         height: 450,
                         child: TabBarView(
@@ -552,7 +583,7 @@ Dukung di aplikasi GemFund!
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 120),
               ],
             ),
@@ -562,63 +593,78 @@ Dukung di aplikasi GemFund!
       bottomNavigationBar: campaign.isExpired
           ? null
           : Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 20,
-                    offset: const Offset(0, -5),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: Container(
+            height: 56,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF42A5F5).withOpacity(0.4),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ElevatedButton(
+              onPressed: () => _showDonateDialog(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.favorite_rounded, size: 20, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Back This Project',
+                    style: GoogleFonts.urbanist(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ],
               ),
-              child: SafeArea(
-                child: Container(
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2563EB),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: ElevatedButton(
-                    onPressed: () => _showDonateDialog(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.favorite_rounded, size: 20, color: Colors.white),
-                        SizedBox(width: 8),
-                        Text(
-                          'Back This Project',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
             ),
+          ),
+        ),
+      ),
     );
   }
 
   Widget _placeholderImage() {
     return Container(
-      color: const Color(0xFF2563EB),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
       child: Center(
         child: Icon(
           Icons.campaign,
-          size: 100,
-          color: Colors.white.withAlpha(179),
+          size: 80,
+          color: Colors.white.withOpacity(0.7),
         ),
       ),
     );
@@ -636,10 +682,10 @@ Dukung di aplikasi GemFund!
           bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
         child: Container(
-          padding: const EdgeInsets.all(28),
+          padding: const EdgeInsets.all(24),
           decoration: const BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -651,59 +697,65 @@ Dukung di aplikasi GemFund!
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Make a Donation',
-                        style: TextStyle(
-                          fontSize: 24,
+                        style: GoogleFonts.urbanist(
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          letterSpacing: -0.5,
+                          color: Colors.black87,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Support this amazing project',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
+                        style: GoogleFonts.urbanist(
+                          fontSize: 13,
+                          color: Colors.black54,
                         ),
                       ),
                     ],
                   ),
                   Container(
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE3F2FD),
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.close, size: 20),
+                      icon: const Icon(Icons.close, size: 20, color: Color(0xFF1976D2)),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 28),
-              
+              const SizedBox(height: 24),
+
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.grey[50],
+                  color: const Color(0xFFE3F2FD),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey[200]!),
+                  border: Border.all(color: const Color(0xFF90CAF9)),
                 ),
                 child: TextField(
                   controller: amountController,
                   decoration: InputDecoration(
                     labelText: 'Amount (ETH)',
+                    labelStyle: GoogleFonts.urbanist(
+                      color: const Color(0xFF1976D2),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
                     hintText: '0.1',
+                    hintStyle: GoogleFonts.urbanist(color: Colors.black38),
                     prefixIcon: Container(
                       margin: const EdgeInsets.all(12),
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withOpacity(0.1),
+                        color: const Color(0xFFE3F2FD),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(
                         Icons.account_balance_wallet_outlined,
-                        color: AppTheme.primaryColor,
+                        color: Color(0xFF1976D2),
                         size: 20,
                       ),
                     ),
@@ -714,14 +766,14 @@ Dukung di aplikasi GemFund!
                     ),
                   ),
                   keyboardType: TextInputType.number,
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: GoogleFonts.urbanist(
+                    fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
               const SizedBox(height: 12),
-              
+
               // Quick Amount Buttons
               Row(
                 children: [
@@ -747,64 +799,53 @@ Dukung di aplikasi GemFund!
                 ],
               ),
               const SizedBox(height: 16),
-              
+
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withOpacity(0.08),
+                  color: const Color(0xFFE3F2FD),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: AppTheme.primaryColor.withOpacity(0.2),
+                    color: const Color(0xFF90CAF9),
                   ),
                 ),
                 child: Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.shield_outlined,
-                        color: AppTheme.primaryColor,
-                        size: 20,
-                      ),
+                    const Icon(
+                      Icons.shield_outlined,
+                      color: Color(0xFF1976D2),
+                      size: 20,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         'Transaction will be made using your connected wallet',
-                        style: TextStyle(
-                          color: AppTheme.primaryColor.withOpacity(0.9),
+                        style: GoogleFonts.urbanist(
+                          color: const Color(0xFF1976D2),
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          height: 1.4,
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
-              
+              const SizedBox(height: 20),
+
               SizedBox(
                 width: double.infinity,
-                height: 56,
+                height: 54,
                 child: Container(
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [
-                        AppTheme.primaryColor,
-                        AppTheme.secondaryColor,
-                      ],
+                      colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
                     ),
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: AppTheme.primaryColor.withOpacity(0.4),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
+                        color: const Color(0xFF42A5F5).withOpacity(0.4),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
@@ -815,24 +856,27 @@ Dukung di aplikasi GemFund!
                       if (amount == null || amount <= 0) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: const Text('Please enter a valid amount'),
-                            backgroundColor: AppTheme.errorColor,
+                            content: Text(
+                              'Please enter a valid amount',
+                              style: GoogleFonts.urbanist(),
+                            ),
+                            backgroundColor: const Color(0xFFEF5350),
                             behavior: SnackBarBehavior.floating,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                         );
                         return;
                       }
 
-                      // Check balance before proceeding
+                      // Check balance
                       try {
                         final walletService = WalletService();
                         final balance = await walletService.getBalance();
                         final balanceInEther = balance?.getValueInUnit(EtherUnit.ether) ?? 0;
-                        final estimatedGas = 0.002; // Estimated gas for transaction
-                        
+                        final estimatedGas = 0.002;
+
                         if (balanceInEther < amount + estimatedGas) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -843,15 +887,16 @@ Dukung di aplikasi GemFund!
                                   Expanded(
                                     child: Text(
                                       'Insufficient balance! You have ${balanceInEther.toStringAsFixed(4)} ETH but need ${(amount + estimatedGas).toStringAsFixed(4)} ETH (including gas)',
+                                      style: GoogleFonts.urbanist(),
                                     ),
                                   ),
                                 ],
                               ),
-                              backgroundColor: AppTheme.errorColor,
+                              backgroundColor: const Color(0xFFEF5350),
                               behavior: SnackBarBehavior.floating,
                               duration: const Duration(seconds: 4),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                             ),
                           );
@@ -861,7 +906,7 @@ Dukung di aplikasi GemFund!
                         // Continue if balance check fails
                       }
 
-                      // Show confirmation dialog first
+                      // Show confirmation dialog
                       final confirmed = await showDialog<bool>(
                         context: context,
                         builder: (ctx) => AlertDialog(
@@ -873,17 +918,22 @@ Dukung di aplikasi GemFund!
                               Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  gradient: AppTheme.primaryGradient,
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
+                                  ),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: const Icon(
                                   Icons.volunteer_activism,
                                   color: Colors.white,
-                                  size: 24,
+                                  size: 20,
                                 ),
                               ),
                               const SizedBox(width: 12),
-                              const Text('Confirm Donation'),
+                              Text(
+                                'Confirm Donation',
+                                style: GoogleFonts.urbanist(fontSize: 18),
+                              ),
                             ],
                           ),
                           content: Column(
@@ -892,7 +942,7 @@ Dukung di aplikasi GemFund!
                               Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: Colors.grey[100],
+                                  color: const Color(0xFFE3F2FD),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Column(
@@ -900,36 +950,69 @@ Dukung di aplikasi GemFund!
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text('Amount:', style: TextStyle(color: Colors.grey[600])),
-                                        Text('$amount ETH', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                        Text(
+                                          'Amount:',
+                                          style: GoogleFonts.urbanist(
+                                            color: Colors.grey[600],
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                        Text(
+                                          '$amount ETH',
+                                          style: GoogleFonts.urbanist(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          ),
+                                        ),
                                       ],
                                     ),
-                                    const Divider(height: 20),
+                                    Divider(height: 20, color: Colors.grey[400]),
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text('To:', style: TextStyle(color: Colors.grey[600])),
+                                        Text(
+                                          'To:',
+                                          style: GoogleFonts.urbanist(
+                                            color: Colors.grey[600],
+                                            fontSize: 13,
+                                          ),
+                                        ),
                                         Flexible(
                                           child: Text(
                                             campaign.title,
-                                            style: const TextStyle(fontWeight: FontWeight.bold),
+                                            style: GoogleFonts.urbanist(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 13,
+                                            ),
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
                                       ],
                                     ),
-                                    const Divider(height: 20),
+                                    Divider(height: 20, color: Colors.grey[400]),
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text('Gas Fee:', style: TextStyle(color: Colors.grey[600])),
-                                        const Text('~0.001 ETH', style: TextStyle(fontWeight: FontWeight.w500)),
+                                        Text(
+                                          'Gas Fee:',
+                                          style: GoogleFonts.urbanist(
+                                            color: Colors.grey[600],
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                        Text(
+                                          '~0.001 ETH',
+                                          style: GoogleFonts.urbanist(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 13,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 12),
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
@@ -939,12 +1022,12 @@ Dukung di aplikasi GemFund!
                                 ),
                                 child: Row(
                                   children: [
-                                    Icon(Icons.info_outline, color: Colors.amber[700], size: 20),
+                                    Icon(Icons.info_outline, color: Colors.amber[700], size: 18),
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
                                         'This action cannot be undone',
-                                        style: TextStyle(fontSize: 12, color: Colors.amber[800]),
+                                        style: GoogleFonts.urbanist(fontSize: 11),
                                       ),
                                     ),
                                   ],
@@ -955,17 +1038,23 @@ Dukung di aplikasi GemFund!
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(ctx, false),
-                              child: Text('Cancel', style: TextStyle(color: Colors.grey[600])),
+                              child: Text(
+                                'Cancel',
+                                style: GoogleFonts.urbanist(color: Colors.grey[600]),
+                              ),
                             ),
                             ElevatedButton(
                               onPressed: () => Navigator.pop(ctx, true),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.primaryColor,
+                                backgroundColor: const Color(0xFF42A5F5),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
-                              child: const Text('Confirm Donation'),
+                              child: Text(
+                                'Confirm Donation',
+                                style: GoogleFonts.urbanist(),
+                              ),
                             ),
                           ],
                         ),
@@ -975,14 +1064,12 @@ Dukung di aplikasi GemFund!
 
                       Navigator.pop(context);
 
-                      // Get private key from wallet service
                       try {
                         final privateKey = await WalletService().getPrivateKey();
                         if (privateKey == null) {
                           throw Exception('Unable to retrieve wallet credentials');
                         }
 
-                        // Show Progress Dialog
                         showDialog(
                           context: context,
                           barrierDismissible: false,
@@ -995,11 +1082,14 @@ Dukung di aplikasi GemFund!
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(e.toString().replaceAll('Exception: ', '')),
-                            backgroundColor: AppTheme.errorColor,
+                            content: Text(
+                              e.toString().replaceAll('Exception: ', ''),
+                              style: GoogleFonts.urbanist(),
+                            ),
+                            backgroundColor: const Color(0xFFEF5350),
                             behavior: SnackBarBehavior.floating,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                         );
@@ -1012,12 +1102,11 @@ Dukung di aplikasi GemFund!
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Donate Now',
-                      style: TextStyle(
+                      style: GoogleFonts.urbanist(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
                       ),
                     ),
                   ),
@@ -1031,7 +1120,7 @@ Dukung di aplikasi GemFund!
   }
 }
 
-// Progress Dialog Widget with Animated Steps
+// Progress Dialog Widget
 class _DonationProgressDialog extends StatefulWidget {
   final double amount;
   final Campaign campaign;
@@ -1047,7 +1136,7 @@ class _DonationProgressDialog extends StatefulWidget {
   State<_DonationProgressDialog> createState() => _DonationProgressDialogState();
 }
 
-class _DonationProgressDialogState extends State<_DonationProgressDialog> 
+class _DonationProgressDialogState extends State<_DonationProgressDialog>
     with SingleTickerProviderStateMixin {
   int _currentStep = 0;
   bool _isError = false;
@@ -1101,17 +1190,14 @@ class _DonationProgressDialogState extends State<_DonationProgressDialog>
 
   Future<void> _startDonation() async {
     try {
-      // Step 1: Validating
       setState(() => _currentStep = 0);
       await Future.delayed(const Duration(milliseconds: 800));
 
-      // Step 2: Connecting
       setState(() => _currentStep = 1);
       await Future.delayed(const Duration(milliseconds: 1000));
 
-      // Step 3: Processing
       setState(() => _currentStep = 2);
-      
+
       final provider = context.read<CampaignProvider>();
       final success = await provider.donate(
         privateKey: widget.privateKey,
@@ -1123,20 +1209,21 @@ class _DonationProgressDialogState extends State<_DonationProgressDialog>
         throw Exception(provider.error ?? 'Transaction failed');
       }
 
-      // Step 4: Confirming
       setState(() => _currentStep = 3);
       await Future.delayed(const Duration(milliseconds: 1500));
 
-      // Success - close and show success message
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Donation successful! Thank you! 🎉'),
-            backgroundColor: AppTheme.successColor,
+            content: Text(
+              'Donation successful! Thank you! 🎉',
+              style: GoogleFonts.urbanist(),
+            ),
+            backgroundColor: const Color(0xFF43A047),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
             ),
           ),
         );
@@ -1147,18 +1234,21 @@ class _DonationProgressDialogState extends State<_DonationProgressDialog>
         _isError = true;
         _errorMessage = e.toString().replaceAll('Exception: ', '');
       });
-      
+
       await Future.delayed(const Duration(seconds: 3));
-      
+
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_errorMessage ?? 'Donation failed'),
-            backgroundColor: AppTheme.errorColor,
+            content: Text(
+              _errorMessage ?? 'Donation failed',
+              style: GoogleFonts.urbanist(),
+            ),
+            backgroundColor: const Color(0xFFEF5350),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
             ),
           ),
         );
@@ -1173,96 +1263,89 @@ class _DonationProgressDialogState extends State<_DonationProgressDialog>
       child: Dialog(
         backgroundColor: Colors.transparent,
         child: Container(
-          padding: const EdgeInsets.all(32),
+          padding: const EdgeInsets.all(28),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 40,
-                offset: const Offset(0, 20),
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
               ),
             ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Header
               if (!_isError) ...[
                 Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
+                  padding: const EdgeInsets.all(18),
+                  decoration: const BoxDecoration(
                     gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        AppTheme.primaryColor.withOpacity(0.1),
-                        AppTheme.secondaryColor.withOpacity(0.1),
-                      ],
+                      colors: [Color(0xFFE3F2FD), Color(0xFFBBDEFB)],
                     ),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.favorite_rounded,
-                    size: 48,
-                    color: AppTheme.primaryColor,
+                    size: 40,
+                    color: Color(0xFF1976D2),
                   ),
                 ),
-                const SizedBox(height: 24),
-                const Text(
+                const SizedBox(height: 20),
+                Text(
                   'Processing Donation',
-                  style: TextStyle(
-                    fontSize: 24,
+                  style: GoogleFonts.urbanist(
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    letterSpacing: -0.5,
+                    color: Colors.black87,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   '${widget.amount.toStringAsFixed(4)} ETH',
-                  style: const TextStyle(
-                    fontSize: 18,
+                  style: GoogleFonts.urbanist(
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: AppTheme.primaryColor,
+                    color: const Color(0xFF1976D2),
                   ),
                 ),
               ] else ...[
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: AppTheme.errorColor.withOpacity(0.1),
+                    color: const Color(0xFFEF5350).withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.error_outline,
-                    size: 48,
-                    color: AppTheme.errorColor,
+                    size: 40,
+                    color: Color(0xFFEF5350),
                   ),
                 ),
-                const SizedBox(height: 24),
-                const Text(
+                const SizedBox(height: 20),
+                Text(
                   'Transaction Failed',
-                  style: TextStyle(
-                    fontSize: 24,
+                  style: GoogleFonts.urbanist(
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    letterSpacing: -0.5,
+                    color: Colors.black87,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   _errorMessage ?? 'An error occurred',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
+                  style: GoogleFonts.urbanist(
+                    fontSize: 13,
+                    color: Colors.black54,
                   ),
                   textAlign: TextAlign.center,
                 ),
               ],
-              
-              const SizedBox(height: 32),
 
-              // Progress Steps
+              const SizedBox(height: 28),
+
               if (!_isError) ...[
                 ..._steps.asMap().entries.map((entry) {
                   final index = entry.key;
@@ -1273,129 +1356,99 @@ class _DonationProgressDialogState extends State<_DonationProgressDialog>
                   return FadeInUp(
                     delay: Duration(milliseconds: 100 * index),
                     child: Container(
-                      margin: const EdgeInsets.only(bottom: 16),
+                      margin: const EdgeInsets.only(bottom: 14),
                       child: Row(
                         children: [
-                          // Step Icon
                           AnimatedContainer(
                             duration: const Duration(milliseconds: 300),
-                            width: 48,
-                            height: 48,
+                            width: 44,
+                            height: 44,
                             decoration: BoxDecoration(
                               gradient: isActive || isCompleted
                                   ? const LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [
-                                        AppTheme.primaryColor,
-                                        AppTheme.secondaryColor,
-                                      ],
-                                    )
+                                colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
+                              )
                                   : null,
-                              color: !isActive && !isCompleted
-                                  ? Colors.grey[200]
-                                  : null,
-                              borderRadius: BorderRadius.circular(14),
+                              color: !isActive && !isCompleted ? const Color(0xFFE0E0E0) : null,
+                              borderRadius: BorderRadius.circular(12),
                               boxShadow: isActive
                                   ? [
-                                      BoxShadow(
-                                        color: AppTheme.primaryColor.withOpacity(0.3),
-                                        blurRadius: 12,
-                                        offset: const Offset(0, 4),
-                                      ),
-                                    ]
+                                BoxShadow(
+                                  color: const Color(0xFF42A5F5).withOpacity(0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ]
                                   : null,
                             ),
                             child: isCompleted
-                                ? const Icon(
-                                    Icons.check_rounded,
-                                    color: Colors.white,
-                                    size: 24,
-                                  )
+                                ? const Icon(Icons.check_rounded, color: Colors.white, size: 22)
                                 : isActive
-                                    ? const SizedBox(
-                                        width: 24,
-                                        height: 24,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2.5,
-                                          valueColor: AlwaysStoppedAnimation<Color>(
-                                            Colors.white,
-                                          ),
-                                        ),
-                                      )
-                                    : Icon(
-                                        step.icon,
-                                        color: Colors.grey[400],
-                                        size: 24,
-                                      ),
+                                ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                                : Icon(step.icon, color: Colors.grey[400], size: 22),
                           ),
-                          const SizedBox(width: 16),
-                          
-                          // Step Info
+                          const SizedBox(width: 14),
+
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   step.title,
-                                  style: TextStyle(
-                                    fontSize: 16,
+                                  style: GoogleFonts.urbanist(
+                                    fontSize: 15,
                                     fontWeight: FontWeight.bold,
-                                    color: isActive || isCompleted
-                                        ? Colors.black87
-                                        : Colors.grey[400],
+                                    color: isActive || isCompleted ? Colors.black87 : Colors.grey[400],
                                   ),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
                                   step.subtitle,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: isActive || isCompleted
-                                        ? Colors.grey[600]
-                                        : Colors.grey[400],
+                                  style: GoogleFonts.urbanist(
+                                    fontSize: 12,
+                                    color: isActive || isCompleted ? Colors.black54 : Colors.grey[400],
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          
-                          // Status Badge
+
                           if (isActive)
                             Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: AppTheme.primaryColor.withOpacity(0.1),
+                                color: const Color(0xFFE3F2FD),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Text(
+                              child: Text(
                                 'Active',
-                                style: TextStyle(
-                                  fontSize: 11,
+                                style: GoogleFonts.urbanist(
+                                  fontSize: 10,
                                   fontWeight: FontWeight.bold,
-                                  color: AppTheme.primaryColor,
+                                  color: const Color(0xFF1976D2),
                                 ),
                               ),
                             )
                           else if (isCompleted)
                             Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: AppTheme.successColor.withOpacity(0.1),
+                                color: const Color(0xFF43A047).withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Text(
+                              child: Text(
                                 'Done',
-                                style: TextStyle(
-                                  fontSize: 11,
+                                style: GoogleFonts.urbanist(
+                                  fontSize: 10,
                                   fontWeight: FontWeight.bold,
-                                  color: AppTheme.successColor,
+                                  color: const Color(0xFF43A047),
                                 ),
                               ),
                             ),
@@ -1404,18 +1457,17 @@ class _DonationProgressDialogState extends State<_DonationProgressDialog>
                     ),
                   );
                 }),
-                
-                const SizedBox(height: 24),
-                
-                // Progress Bar
-                Container(
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
+
+                const SizedBox(height: 20),
+
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE0E0E0),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 500),
                       width: double.infinity,
@@ -1425,10 +1477,7 @@ class _DonationProgressDialogState extends State<_DonationProgressDialog>
                         child: Container(
                           decoration: const BoxDecoration(
                             gradient: LinearGradient(
-                              colors: [
-                                AppTheme.primaryColor,
-                                AppTheme.secondaryColor,
-                              ],
+                              colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
                             ),
                           ),
                         ),
@@ -1436,39 +1485,38 @@ class _DonationProgressDialogState extends State<_DonationProgressDialog>
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 Text(
                   '${((_currentStep + 1) / _steps.length * 100).toInt()}% Complete',
-                  style: TextStyle(
-                    fontSize: 13,
+                  style: GoogleFonts.urbanist(
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: Colors.grey[600],
+                    color: Colors.black54,
                   ),
                 ),
               ],
-              
-              const SizedBox(height: 24),
-              
-              // Info Message
+
+              const SizedBox(height: 20),
+
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: _isError 
-                      ? AppTheme.errorColor.withOpacity(0.08)
-                      : Colors.blue.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(16),
+                  color: _isError
+                      ? const Color(0xFFEF5350).withOpacity(0.1)
+                      : const Color(0xFFE3F2FD),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: _isError
-                        ? AppTheme.errorColor.withOpacity(0.2)
-                        : Colors.blue.withOpacity(0.2),
+                        ? const Color(0xFFEF5350).withOpacity(0.3)
+                        : const Color(0xFF90CAF9),
                   ),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       _isError ? Icons.info_outline : Icons.hourglass_empty_rounded,
-                      color: _isError ? AppTheme.errorColor : Colors.blue,
-                      size: 20,
+                      color: _isError ? const Color(0xFFEF5350) : const Color(0xFF1976D2),
+                      size: 18,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -1476,11 +1524,9 @@ class _DonationProgressDialogState extends State<_DonationProgressDialog>
                         _isError
                             ? 'Please check your details and try again'
                             : 'Please wait while we process your donation',
-                        style: TextStyle(
-                          color: _isError 
-                              ? AppTheme.errorColor.withOpacity(0.9)
-                              : Colors.blue.withOpacity(0.9),
-                          fontSize: 12,
+                        style: GoogleFonts.urbanist(
+                          color: _isError ? const Color(0xFFEF5350) : const Color(0xFF1976D2),
+                          fontSize: 11,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -1508,12 +1554,12 @@ class DonationStep {
   });
 }
 
-class _ModernInfoItem extends StatelessWidget {
+class _InfoItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
 
-  const _ModernInfoItem({
+  const _InfoItem({
     required this.icon,
     required this.label,
     required this.value,
@@ -1523,22 +1569,22 @@ class _ModernInfoItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Icon(icon, size: 22, color: Colors.white.withOpacity(0.9)),
+        Icon(icon, size: 20, color: const Color(0xFF1976D2)),
         const SizedBox(height: 8),
         Text(
           value,
-          style: const TextStyle(
-            color: Colors.white,
+          style: GoogleFonts.urbanist(
+            color: const Color(0xFF1976D2),
             fontWeight: FontWeight.bold,
-            fontSize: 16,
+            fontSize: 15,
           ),
         ),
         const SizedBox(height: 2),
         Text(
           label,
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.8),
-            fontSize: 11,
+          style: GoogleFonts.urbanist(
+            color: Colors.black54,
+            fontSize: 10,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -1556,49 +1602,40 @@ class _StoryTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'About this campaign',
-            style: TextStyle(
-              fontSize: 20,
+            style: GoogleFonts.urbanist(
+              fontSize: 18,
               fontWeight: FontWeight.bold,
-              letterSpacing: -0.5,
+              color: Colors.black87,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Text(
             campaign.description,
-            style: TextStyle(
-              fontSize: 15,
-              height: 1.7,
-              color: Colors.grey[800],
-              letterSpacing: 0.1,
+            style: GoogleFonts.urbanist(
+              fontSize: 14,
+              height: 1.6,
+              color: Colors.grey[700],
             ),
           ),
-          const SizedBox(height: 24),
-          
-          // Creator Info Section
+          const SizedBox(height: 20),
+
           _CreatorInfoWidget(walletAddress: campaign.owner.hexEip55),
-          const SizedBox(height: 24),
-          
+          const SizedBox(height: 20),
+
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  AppTheme.primaryColor.withOpacity(0.08),
-                  AppTheme.secondaryColor.withOpacity(0.08),
-                ],
+              gradient: const LinearGradient(
+                colors: [Color(0xFFE3F2FD), Color(0xFFBBDEFB)],
               ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: AppTheme.primaryColor.withOpacity(0.15),
-              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFF90CAF9)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1608,28 +1645,29 @@ class _StoryTab extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(12),
+                        color: const Color(0xFFE3F2FD),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(
                         Icons.calendar_today_outlined,
-                        color: AppTheme.primaryColor,
-                        size: 20,
+                        color: Color(0xFF1976D2),
+                        size: 18,
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Text(
+                    Text(
                       'Campaign Timeline',
-                      style: TextStyle(
-                        fontSize: 16,
+                      style: GoogleFonts.urbanist(
+                        fontSize: 15,
                         fontWeight: FontWeight.bold,
+                        color: Colors.black87,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
@@ -1642,8 +1680,8 @@ class _StoryTab extends StatelessWidget {
                         children: [
                           Text(
                             'Deadline',
-                            style: TextStyle(
-                              fontSize: 13,
+                            style: GoogleFonts.urbanist(
+                              fontSize: 12,
                               color: Colors.grey[600],
                               fontWeight: FontWeight.w500,
                             ),
@@ -1651,32 +1689,33 @@ class _StoryTab extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                             dateFormat.format(campaign.deadline),
-                            style: const TextStyle(
+                            style: GoogleFonts.urbanist(
                               fontWeight: FontWeight.bold,
-                              fontSize: 15,
+                              fontSize: 14,
+                              color: Colors.black87,
                             ),
                           ),
                         ],
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
+                          horizontal: 12,
+                          vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: campaign.isExpired
-                              ? AppTheme.errorColor.withOpacity(0.1)
-                              : AppTheme.successColor.withOpacity(0.1),
+                          gradient: LinearGradient(
+                            colors: campaign.isExpired
+                                ? [const Color(0xFFEF5350), const Color(0xFFE53935)]
+                                : [const Color(0xFF66BB6A), const Color(0xFF43A047)],
+                          ),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           campaign.isExpired ? 'Ended' : 'Active',
-                          style: TextStyle(
-                            color: campaign.isExpired
-                                ? AppTheme.errorColor
-                                : AppTheme.successColor,
+                          style: GoogleFonts.urbanist(
+                            color: Colors.white,
                             fontWeight: FontWeight.bold,
-                            fontSize: 12,
+                            fontSize: 11,
                           ),
                         ),
                       ),
@@ -1702,40 +1741,35 @@ class _UpdatesTab extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(32),
-              decoration: BoxDecoration(
+              padding: const EdgeInsets.all(28),
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppTheme.primaryColor.withOpacity(0.1),
-                    AppTheme.secondaryColor.withOpacity(0.1),
-                  ],
+                  colors: [Color(0xFFE3F2FD), Color(0xFFBBDEFB)],
                 ),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.notifications_none_outlined,
-                size: 56,
-                color: AppTheme.primaryColor,
+                size: 48,
+                color: Color(0xFF1976D2),
               ),
             ),
-            const SizedBox(height: 24),
-            const Text(
+            const SizedBox(height: 20),
+            Text(
               'No updates yet',
-              style: TextStyle(
-                fontSize: 22,
+              style: GoogleFonts.urbanist(
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
-                letterSpacing: -0.5,
+                color: Colors.black87,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             Text(
               'Check back later for updates\nfrom the campaign owner',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-                height: 1.5,
+              style: GoogleFonts.urbanist(
+                fontSize: 13,
+                color: Colors.black54,
+                height: 1.4,
               ),
               textAlign: TextAlign.center,
             ),
@@ -1761,40 +1795,35 @@ class _BackersTab extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.all(32),
-                decoration: BoxDecoration(
+                padding: const EdgeInsets.all(28),
+                decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      AppTheme.accentColor.withOpacity(0.1),
-                      AppTheme.primaryColor.withOpacity(0.1),
-                    ],
+                    colors: [Color(0xFFE3F2FD), Color(0xFFBBDEFB)],
                   ),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Icons.favorite_border_rounded,
-                  size: 56,
-                  color: AppTheme.accentColor,
+                  size: 48,
+                  color: Color(0xFF1976D2),
                 ),
               ),
-              const SizedBox(height: 24),
-              const Text(
+              const SizedBox(height: 20),
+              Text(
                 'No backers yet',
-                style: TextStyle(
-                  fontSize: 22,
+                style: GoogleFonts.urbanist(
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  letterSpacing: -0.5,
+                  color: Colors.black87,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               Text(
                 'Be the first to support\nthis amazing campaign!',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                  height: 1.5,
+                style: GoogleFonts.urbanist(
+                  fontSize: 13,
+                  color: Colors.black54,
+                  height: 1.4,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -1805,7 +1834,7 @@ class _BackersTab extends StatelessWidget {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       itemCount: campaign.donators.length,
       itemBuilder: (context, index) {
         final donator = campaign.donators[index];
@@ -1816,15 +1845,15 @@ class _BackersTab extends StatelessWidget {
           delay: Duration(milliseconds: 50 * index),
           child: Container(
             margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.grey[200]!),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE0E0E0)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.02),
-                  blurRadius: 10,
+                  color: const Color(0xFF64B5F6).withOpacity(0.05),
+                  blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
               ],
@@ -1832,48 +1861,44 @@ class _BackersTab extends StatelessWidget {
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(3),
+                  padding: const EdgeInsets.all(2),
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        AppTheme.primaryColor,
-                        AppTheme.secondaryColor,
-                      ],
+                      colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
                     ),
                     shape: BoxShape.circle,
                   ),
                   child: CircleAvatar(
-                    radius: 22,
+                    radius: 20,
                     backgroundColor: Colors.white,
                     child: Text(
                       '${index + 1}',
-                      style: const TextStyle(
-                        color: AppTheme.primaryColor,
+                      style: GoogleFonts.urbanist(
+                        color: const Color(0xFF1976D2),
                         fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                        fontSize: 13,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         '${donator.hex.substring(0, 10)}...${donator.hex.substring(donator.hex.length - 8)}',
-                        style: const TextStyle(
+                        style: GoogleFonts.jetBrainsMono(
                           fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                          fontFamily: 'monospace',
+                          fontSize: 12,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         'Backer #${index + 1}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
+                        style: GoogleFonts.urbanist(
+                          fontSize: 11,
+                          color: Colors.black54,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -1885,17 +1910,17 @@ class _BackersTab extends StatelessWidget {
                   children: [
                     Text(
                       '${amountInEther.toStringAsFixed(4)} ETH',
-                      style: const TextStyle(
+                      style: GoogleFonts.urbanist(
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.successColor,
-                        fontSize: 15,
+                        color: const Color(0xFF43A047),
+                        fontSize: 14,
                       ),
                     ),
                     const SizedBox(height: 4),
                     const Icon(
                       Icons.favorite,
-                      size: 16,
-                      color: AppTheme.accentColor,
+                      size: 14,
+                      color: Color(0xFFEF5350),
                     ),
                   ],
                 ),
@@ -1908,7 +1933,6 @@ class _BackersTab extends StatelessWidget {
   }
 }
 
-/// Quick amount button for donation dialog
 class _QuickAmountButton extends StatelessWidget {
   final String amount;
   final VoidCallback onTap;
@@ -1927,19 +1951,17 @@ class _QuickAmountButton extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: AppTheme.primaryColor.withOpacity(0.1),
+            color: const Color(0xFFE3F2FD),
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: AppTheme.primaryColor.withOpacity(0.3),
-            ),
+            border: Border.all(color: const Color(0xFF90CAF9)),
           ),
           child: Center(
             child: Text(
               '$amount ETH',
-              style: const TextStyle(
-                fontSize: 12,
+              style: GoogleFonts.urbanist(
+                fontSize: 11,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.primaryColor,
+                color: const Color(0xFF1976D2),
               ),
             ),
           ),
@@ -1949,12 +1971,11 @@ class _QuickAmountButton extends StatelessWidget {
   }
 }
 
-/// Widget to display campaign creator info
 class _CreatorInfoWidget extends StatefulWidget {
   final String walletAddress;
-  
+
   const _CreatorInfoWidget({required this.walletAddress});
-  
+
   @override
   State<_CreatorInfoWidget> createState() => _CreatorInfoWidgetState();
 }
@@ -1962,13 +1983,13 @@ class _CreatorInfoWidget extends StatefulWidget {
 class _CreatorInfoWidgetState extends State<_CreatorInfoWidget> {
   UserProfile? _creatorProfile;
   bool _isLoading = true;
-  
+
   @override
   void initState() {
     super.initState();
     _loadCreatorProfile();
   }
-  
+
   Future<void> _loadCreatorProfile() async {
     try {
       final profile = await UserProfileService().getProfile(widget.walletAddress);
@@ -1984,7 +2005,7 @@ class _CreatorInfoWidgetState extends State<_CreatorInfoWidget> {
       }
     }
   }
-  
+
   String _getShortAddress() {
     final addr = widget.walletAddress;
     if (addr.length > 10) {
@@ -1992,7 +2013,7 @@ class _CreatorInfoWidgetState extends State<_CreatorInfoWidget> {
     }
     return addr;
   }
-  
+
   String _getInitials() {
     if (_creatorProfile?.fullName != null && _creatorProfile!.fullName!.isNotEmpty) {
       final parts = _creatorProfile!.fullName!.split(' ');
@@ -2003,7 +2024,7 @@ class _CreatorInfoWidgetState extends State<_CreatorInfoWidget> {
     }
     return widget.walletAddress.substring(2, 4).toUpperCase();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -2011,57 +2032,55 @@ class _CreatorInfoWidgetState extends State<_CreatorInfoWidget> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: const Color(0xFFE0E0E0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
+            color: const Color(0xFF64B5F6).withOpacity(0.05),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Row(
         children: [
-          // Avatar
           Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppTheme.primaryColor, AppTheme.secondaryColor],
+            width: 44,
+            height: 44,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
               ),
               shape: BoxShape.circle,
             ),
             child: Center(
               child: _isLoading
                   ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
                   : Text(
-                      _getInitials(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
+                _getInitials(),
+                style: GoogleFonts.urbanist(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
+              ),
             ),
           ),
-          const SizedBox(width: 14),
-          // Creator info
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Created by',
-                  style: TextStyle(
-                    fontSize: 11,
+                  style: GoogleFonts.urbanist(
+                    fontSize: 10,
                     color: Colors.grey[500],
                     fontWeight: FontWeight.w500,
                   ),
@@ -2071,9 +2090,10 @@ class _CreatorInfoWidgetState extends State<_CreatorInfoWidget> {
                   _creatorProfile?.hasProfile == true
                       ? _creatorProfile!.getDisplayName()
                       : _getShortAddress(),
-                  style: const TextStyle(
-                    fontSize: 15,
+                  style: GoogleFonts.urbanist(
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
+                    color: Colors.black87,
                   ),
                 ),
                 if (_creatorProfile?.email != null && _creatorProfile!.email!.isNotEmpty)
@@ -2081,38 +2101,35 @@ class _CreatorInfoWidgetState extends State<_CreatorInfoWidget> {
                     padding: const EdgeInsets.only(top: 2),
                     child: Text(
                       _creatorProfile!.email!,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
+                      style: GoogleFonts.urbanist(
+                        fontSize: 11,
+                        color: Colors.black54,
                       ),
                     ),
                   ),
               ],
             ),
           ),
-          // Verified badge if has profile
           if (_creatorProfile?.hasProfile == true)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: AppTheme.successColor.withOpacity(0.1),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF66BB6A), Color(0xFF43A047)],
+                ),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.verified_rounded,
-                    size: 14,
-                    color: AppTheme.successColor,
-                  ),
+                  const Icon(Icons.verified_rounded, size: 12, color: Colors.white),
                   const SizedBox(width: 4),
                   Text(
                     'Verified',
-                    style: TextStyle(
-                      fontSize: 11,
+                    style: GoogleFonts.urbanist(
+                      fontSize: 10,
                       fontWeight: FontWeight.w600,
-                      color: AppTheme.successColor,
+                      color: Colors.white,
                     ),
                   ),
                 ],

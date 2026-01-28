@@ -27,22 +27,18 @@ class _MainNavigationState extends State<MainNavigation> {
     NavigationItem(
       icon: Icons.home_rounded,
       label: 'Home',
-      activeColor: AppTheme.primaryColor,
     ),
     NavigationItem(
       icon: Icons.explore_rounded,
       label: 'Explore',
-      activeColor: AppTheme.secondaryColor,
     ),
     NavigationItem(
       icon: Icons.campaign_rounded,
-      label: 'My Campaigns',
-      activeColor: AppTheme.accentColor,
+      label: 'Campaigns',
     ),
     NavigationItem(
       icon: Icons.person_rounded,
       label: 'Profile',
-      activeColor: AppTheme.successColor,
     ),
   ];
 
@@ -58,26 +54,25 @@ class _MainNavigationState extends State<MainNavigation> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
+              color: const Color(0xFF64B5F6).withOpacity(0.12),
+              blurRadius: 16,
+              offset: const Offset(0, -4),
             ),
           ],
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: List.generate(
                 _navItems.length,
-                (index) => _buildNavItem(index),
+                    (index) => _buildNavItem(index),
               ),
             ),
           ),
         ),
       ),
-      // Remove FAB from here - it's now in HomeScreen only
     );
   }
 
@@ -85,41 +80,70 @@ class _MainNavigationState extends State<MainNavigation> {
     final item = _navItems[index];
     final isSelected = _currentIndex == index;
 
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _currentIndex = index;
-        });
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? item.activeColor.withOpacity(0.1)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              item.icon,
-              color: isSelected ? item.activeColor : AppTheme.textSecondary,
-              size: 24,
-            ),
-            if (isSelected) ...[
-              const SizedBox(width: 8),
-              Text(
-                item.label,
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        child: Container(
+          color: Colors.transparent,
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                padding: EdgeInsets.all(isSelected ? 8 : 6),
+                decoration: BoxDecoration(
+                  gradient: isSelected
+                      ? const LinearGradient(
+                    colors: [
+                      Color(0xFF42A5F5),
+                      Color(0xFF1E88E5),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                      : null,
+                  color: isSelected ? null : Colors.transparent,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: isSelected
+                      ? [
+                    BoxShadow(
+                      color: const Color(0xFF42A5F5).withOpacity(0.4),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                      : null,
+                ),
+                child: Icon(
+                  item.icon,
+                  color: isSelected ? Colors.white : Colors.grey.shade400,
+                  size: isSelected ? 24 : 22,
+                ),
+              ),
+              const SizedBox(height: 4),
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
                 style: TextStyle(
-                  color: item.activeColor,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
+                  color: isSelected ? const Color(0xFF1976D2) : Colors.grey.shade500,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  fontSize: isSelected ? 11 : 10,
+                  letterSpacing: 0.2,
+                ),
+                child: Text(
+                  item.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -129,11 +153,9 @@ class _MainNavigationState extends State<MainNavigation> {
 class NavigationItem {
   final IconData icon;
   final String label;
-  final Color activeColor;
 
   NavigationItem({
     required this.icon,
     required this.label,
-    required this.activeColor,
   });
 }

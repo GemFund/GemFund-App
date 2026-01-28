@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:animate_do/animate_do.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../config/app_theme.dart';
 import '../providers/campaign_provider.dart';
 import '../services/wallet_service.dart';
@@ -91,7 +91,7 @@ class TransactionHistory {
 
 class TransactionHistoryService {
   static final TransactionHistoryService _instance =
-      TransactionHistoryService._internal();
+  TransactionHistoryService._internal();
   factory TransactionHistoryService() => _instance;
   TransactionHistoryService._internal();
 
@@ -125,7 +125,7 @@ class TransactionHistoryService {
   }) async {
     try {
       final history = await getTransactionHistory(address);
-      
+
       final newTransaction = TransactionHistory(
         hash: hash,
         type: type,
@@ -158,8 +158,7 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProviderStateMixin {
-  late AnimationController _pulseController;
+class _ProfileScreenState extends State<ProfileScreen> {
   EtherAmount? _balance;
   bool _isLoadingBalance = true;
   Timer? _balanceTimer;
@@ -170,14 +169,10 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
-    _pulseController = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    )..repeat(reverse: true);
     _loadBalance();
     _loadTransactionHistory();
     _loadUserProfile();
-    
+
     _balanceTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
       if (mounted) {
         _loadBalance(showLoading: false);
@@ -187,7 +182,6 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
   @override
   void dispose() {
-    _pulseController.dispose();
     _balanceTimer?.cancel();
     super.dispose();
   }
@@ -199,7 +193,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           _isLoadingBalance = true;
         });
       }
-      
+
       final balance = await WalletService().getBalance();
       if (mounted) {
         setState(() {
@@ -226,7 +220,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       if (address == null) return;
 
       final history = await TransactionHistoryService().getTransactionHistory(address);
-      
+
       if (mounted) {
         setState(() {
           _transactionHistory = history;
@@ -297,539 +291,477 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppTheme.primaryColor.withOpacity(0.05),
-              AppTheme.accentColor.withOpacity(0.05),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: FutureBuilder<String?>(
-            future: WalletService().getAddress(),
-            builder: (context, snapshot) {
-              final address = snapshot.data ?? '0x0000...0000';
-              final shortAddress = address.length > 10
-                  ? '${address.substring(0, 6)}...${address.substring(address.length - 4)}'
-                  : address;
-              
-              return RefreshIndicator(
-                onRefresh: _refreshAll,
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: Column(
-                    children: [
-                      _buildModernHeader(address, shortAddress),
-                      _buildQuickActions(),
-                      _buildTransactionHistory(),
-                      _buildMenuSection(),
-                      const SizedBox(height: 24),
-                    ],
-                  ),
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: FutureBuilder<String?>(
+          future: WalletService().getAddress(),
+          builder: (context, snapshot) {
+            final address = snapshot.data ?? '0x0000...0000';
+            final shortAddress = address.length > 10
+                ? '${address.substring(0, 6)}...${address.substring(address.length - 4)}'
+                : address;
+
+            return RefreshIndicator(
+              onRefresh: _refreshAll,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  children: [
+                    _buildHeader(address, shortAddress),
+                    _buildQuickActions(),
+                    _buildTransactionHistory(),
+                    _buildMenuSection(),
+                    const SizedBox(height: 24),
+                  ],
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _buildModernHeader(String address, String shortAddress) {
-    return FadeIn(
-      child: Container(
-        margin: const EdgeInsets.all(20),
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          gradient: AppTheme.primaryGradient,
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.primaryColor.withOpacity(0.3),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
+  Widget _buildHeader(String address, String shortAddress) {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFE3F2FD), Color(0xFFBBDEFB)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        child: Column(
-          children: [
-            FadeInDown(
-              child: AnimatedBuilder(
-                animation: _pulseController,
-                builder: (context, child) {
-                  return Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.white.withOpacity(0.3 + (_pulseController.value * 0.3)),
-                          blurRadius: 20,
-                          spreadRadius: 5,
-                        ),
-                      ],
-                    ),
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 3),
-                      ),
-                      child: CircleAvatar(
-                        radius: 45,
-                        backgroundColor: Colors.white,
-                        child: _userProfile?.hasProfile == true
-                            ? Text(
-                                _getProfileInitials(),
-                                style: const TextStyle(
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.primaryColor,
-                                ),
-                              )
-                            : const Icon(
-                                Icons.account_balance_wallet_rounded,
-                                size: 45,
-                                color: AppTheme.primaryColor,
-                              ),
-                      ),
-                    ),
-                  );
-                },
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF64B5F6).withOpacity(0.2),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFF1976D2), width: 3),
+            ),
+            child: CircleAvatar(
+              radius: 40,
+              backgroundColor: Colors.white,
+              child: _userProfile?.hasProfile == true
+                  ? Text(
+                _getProfileInitials(),
+                style: GoogleFonts.urbanist(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF1976D2),
+                ),
+              )
+                  : const Icon(
+                Icons.account_balance_wallet_rounded,
+                size: 40,
+                color: Color(0xFF1976D2),
               ),
             ),
-            const SizedBox(height: 12),
-            // User name display
-            if (_userProfile?.hasProfile == true)
-              FadeInUp(
-                child: Column(
-                  children: [
-                    Text(
-                      _userProfile!.getDisplayName(),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+          ),
+          const SizedBox(height: 12),
+
+          // User name display
+          if (_userProfile?.hasProfile == true)
+            Column(
+              children: [
+                Text(
+                  _userProfile!.getDisplayName(),
+                  style: GoogleFonts.urbanist(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                if (_userProfile!.email != null && _userProfile!.email!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      _userProfile!.email!,
+                      style: GoogleFonts.urbanist(
+                        fontSize: 12,
+                        color: Colors.black54,
                       ),
                     ),
-                    if (_userProfile!.email != null && _userProfile!.email!.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          _userProfile!.email!,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.white.withOpacity(0.8),
-                          ),
+                  ),
+                const SizedBox(height: 8),
+              ],
+            ),
+
+          Column(
+            children: [
+              Text(
+                'Wallet Balance',
+                style: GoogleFonts.urbanist(
+                  fontSize: 13,
+                  color: Colors.black54,
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 36,
+                child: _isLoadingBalance
+                    ? const Center(
+                  child: SizedBox(
+                    height: 24,
+                    width: 24,
+                    child: CircularProgressIndicator(
+                      color: Color(0xFF1976D2),
+                      strokeWidth: 2.5,
+                    ),
+                  ),
+                )
+                    : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      _balance != null
+                          ? _balance!.getValueInUnit(EtherUnit.ether).toStringAsFixed(4)
+                          : '0.0000',
+                      style: GoogleFonts.urbanist(
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF1976D2),
+                        height: 1,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Text(
+                        'ETH',
+                        style: GoogleFonts.urbanist(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1976D2),
                         ),
                       ),
+                    ),
                   ],
                 ),
               ),
-            const SizedBox(height: 8),
-            
-            FadeInUp(
-              delay: const Duration(milliseconds: 100),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          GestureDetector(
+            onTap: () {
+              Clipboard.setData(ClipboardData(text: address));
+              HapticFeedback.mediumImpact();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Row(
                     children: [
+                      const Icon(Icons.check_circle, color: Colors.white),
+                      const SizedBox(width: 12),
                       Text(
-                        'Wallet Balance',
-                        style: AppTheme.bodyMedium.copyWith(
-                          color: Colors.white.withOpacity(0.9),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.refresh,
-                              size: 12,
-                              color: Colors.white.withOpacity(0.9),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Live',
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Colors.white.withOpacity(0.9),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
+                        'Address copied to clipboard!',
+                        style: GoogleFonts.urbanist(),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  _isLoadingBalance
-                      ? const SizedBox(
-                          height: 40,
-                          width: 40,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              _balance != null
-                                  ? _balance!.getValueInUnit(EtherUnit.ether).toStringAsFixed(4)
-                                  : '0.0000',
-                              style: const TextStyle(
-                                fontSize: 42,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                height: 1,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 8),
-                              child: Text(
-                                'SepoliaETH',
-                                style: AppTheme.bodyLarge.copyWith(
-                                  color: Colors.white.withOpacity(0.9),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  backgroundColor: const Color(0xFF43A047),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF64B5F6).withOpacity(0.15),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE3F2FD),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.verified_user_rounded,
+                      size: 14,
+                      color: Color(0xFF1976D2),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    shortAddress,
+                    style: GoogleFonts.urbanist(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  const Icon(
+                    Icons.content_copy_rounded,
+                    size: 16,
+                    color: Color(0xFF1976D2),
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
-            
-            FadeInUp(
-              delay: const Duration(milliseconds: 200),
-              child: GestureDetector(
-                onTap: () {
-                  Clipboard.setData(ClipboardData(text: address));
-                  HapticFeedback.mediumImpact();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Row(
-                        children: [
-                          Icon(Icons.check_circle, color: Colors.white),
-                          SizedBox(width: 12),
-                          Text('Address copied to clipboard!'),
-                        ],
-                      ),
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      backgroundColor: AppTheme.successColor,
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(25),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.3),
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.3),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.verified_user_rounded,
-                          size: 14,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        shortAddress,
-                        style: AppTheme.bodyMedium.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      const Icon(
-                        Icons.content_copy_rounded,
-                        size: 16,
-                        color: Colors.white,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildQuickActions() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: FadeInUp(
-        delay: const Duration(milliseconds: 300),
-        child: Row(
-          children: [
-            Expanded(
-              child: _QuickActionCard(
-                icon: Icons.refresh_rounded,
-                label: 'Refresh',
-                color: AppTheme.primaryColor,
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  _refreshAll();
-                },
-              ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          Expanded(
+            child: _QuickActionCard(
+              icon: Icons.refresh_rounded,
+              label: 'Refresh',
+              onTap: () {
+                HapticFeedback.lightImpact();
+                _refreshAll();
+              },
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _QuickActionCard(
-                icon: Icons.history_rounded,
-                label: 'History',
-                color: AppTheme.accentColor,
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  _showTransactionHistoryDialog(context);
-                },
-              ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _QuickActionCard(
+              icon: Icons.history_rounded,
+              label: 'History',
+              onTap: () {
+                HapticFeedback.lightImpact();
+                _showTransactionHistoryDialog(context);
+              },
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildTransactionHistory() {
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          FadeInLeft(
-            delay: const Duration(milliseconds: 350),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Recent Activity',
-                  style: AppTheme.heading3.copyWith(
-                    fontWeight: FontWeight.bold,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Recent Activity',
+                style: GoogleFonts.urbanist(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              if (_transactionHistory.isNotEmpty)
+                TextButton(
+                  onPressed: () => _showTransactionHistoryDialog(context),
+                  child: Text(
+                    'View All',
+                    style: GoogleFonts.urbanist(
+                      color: const Color(0xFF1976D2),
+                    ),
                   ),
                 ),
-                if (_transactionHistory.isNotEmpty)
-                  TextButton(
-                    onPressed: () => _showTransactionHistoryDialog(context),
-                    child: const Text('View All'),
-                  ),
-              ],
-            ),
+            ],
           ),
           const SizedBox(height: 12),
           _isLoadingHistory
               ? const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(20),
-                    child: CircularProgressIndicator(),
-                  ),
-                )
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: CircularProgressIndicator(
+                color: Color(0xFF1976D2),
+              ),
+            ),
+          )
               : _transactionHistory.isEmpty
-                  ? _buildEmptyHistory()
-                  : _buildHistoryList(),
+              ? _buildEmptyHistory()
+              : _buildHistoryList(),
         ],
       ),
     );
   }
 
   Widget _buildEmptyHistory() {
-    return FadeIn(
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF64B5F6).withOpacity(0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: const BoxDecoration(
+              color: Color(0xFFE3F2FD),
+              shape: BoxShape.circle,
             ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Icon(
+            child: const Icon(
               Icons.receipt_long_rounded,
               size: 48,
-              color: AppTheme.textSecondary.withOpacity(0.5),
+              color: Color(0xFF64B5F6),
             ),
-            const SizedBox(height: 12),
-            Text(
-              'No transactions yet',
-              style: AppTheme.bodyMedium.copyWith(
-                color: AppTheme.textSecondary,
-                fontWeight: FontWeight.w500,
-              ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'No transactions yet',
+            style: GoogleFonts.urbanist(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
             ),
-            const SizedBox(height: 4),
-            Text(
-              'Your donation history will appear here',
-              style: AppTheme.bodySmall.copyWith(
-                color: AppTheme.textSecondary,
-              ),
-              textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Your donation history will appear here',
+            style: GoogleFonts.urbanist(
+              fontSize: 13,
+              color: Colors.black54,
             ),
-          ],
-        ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildHistoryList() {
     final recentTransactions = _transactionHistory.take(3).toList();
-    
+
     return Column(
       children: recentTransactions.map((tx) {
-        return FadeInLeft(
-          delay: Duration(milliseconds: 400 + (recentTransactions.indexOf(tx) * 50)),
-          child: _TransactionItem(transaction: tx),
-        );
+        return _TransactionItem(transaction: tx);
       }).toList(),
     );
   }
 
   Widget _buildMenuSection() {
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          FadeInLeft(
-            delay: const Duration(milliseconds: 600),
-            child: Padding(
-              padding: const EdgeInsets.only(left: 4, bottom: 16),
-              child: Text(
-                'Settings',
-                style: AppTheme.heading3.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 16),
+            child: Text(
+              'Settings',
+              style: GoogleFonts.urbanist(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
               ),
             ),
           ),
-          FadeInLeft(
-            delay: const Duration(milliseconds: 650),
-            child: _ModernMenuItem(
-              icon: Icons.person_outline_rounded,
-              title: 'Edit Profile',
-              subtitle: _userProfile?.hasProfile == true 
-                  ? _userProfile!.getDisplayName()
-                  : 'Set your name & username',
-              color: AppTheme.primaryColor,
-              onTap: () {
-                HapticFeedback.selectionClick();
-                _navigateToEditProfile();
-              },
-            ),
+          _ModernMenuItem(
+            icon: Icons.person_outline_rounded,
+            title: 'Edit Profile',
+            subtitle: _userProfile?.hasProfile == true
+                ? _userProfile!.getDisplayName()
+                : 'Set your name & username',
+            onTap: () {
+              HapticFeedback.selectionClick();
+              _navigateToEditProfile();
+            },
           ),
           const SizedBox(height: 12),
-          FadeInLeft(
-            delay: const Duration(milliseconds: 700),
-            child: _ModernMenuItem(
-              icon: Icons.info_rounded,
-              title: 'About',
-              subtitle: 'Version & information',
-              color: Colors.teal,
-              onTap: () {
-                HapticFeedback.selectionClick();
-                _showAboutDialog(context);
-              },
-            ),
+          _ModernMenuItem(
+            icon: Icons.info_rounded,
+            title: 'About',
+            subtitle: 'Version & information',
+            onTap: () {
+              HapticFeedback.selectionClick();
+              _showAboutDialog(context);
+            },
           ),
           const SizedBox(height: 20),
-          
-          FadeInUp(
-            delay: const Duration(milliseconds: 900),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.errorColor.withOpacity(0.3),
-                    blurRadius: 15,
-                    offset: const Offset(0, 5),
+
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFEF5350).withOpacity(0.2),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ElevatedButton(
+              onPressed: () {
+                HapticFeedback.mediumImpact();
+                _showLogoutDialog(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFEF5350),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                elevation: 0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.power_settings_new_rounded, size: 22),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Disconnect Wallet',
+                    style: GoogleFonts.urbanist(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ],
               ),
-              child: ElevatedButton(
-                onPressed: () {
-                  HapticFeedback.mediumImpact();
-                  _showLogoutDialog(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.errorColor,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 18),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  elevation: 0,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.power_settings_new_rounded, size: 24),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Disconnect Wallet',
-                      style: AppTheme.bodyLarge.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ),
           ),
-          
+
           const SizedBox(height: 20),
-          
-          FadeIn(
-            delay: const Duration(milliseconds: 950),
-            child: Center(
-              child: Text(
-                'GemFund v1.0.0 • Sepolia Testnet',
-                style: AppTheme.bodySmall.copyWith(
-                  color: AppTheme.textSecondary,
-                ),
+
+          Center(
+            child: Text(
+              'GemFund v1.0.0 • Sepolia Testnet',
+              style: GoogleFonts.urbanist(
+                fontSize: 12,
+                color: Colors.black54,
               ),
             ),
           ),
@@ -850,7 +782,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         builder: (context, scrollController) => Container(
           decoration: const BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
             children: [
@@ -870,8 +802,10 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                   children: [
                     Text(
                       'Transaction History',
-                      style: AppTheme.heading2.copyWith(
+                      style: GoogleFonts.urbanist(
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
+                        color: Colors.black87,
                       ),
                     ),
                     IconButton(
@@ -879,7 +813,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                         Navigator.pop(context);
                         _loadTransactionHistory();
                       },
-                      icon: const Icon(Icons.refresh_rounded),
+                      icon: const Icon(Icons.refresh_rounded, color: Color(0xFF1976D2)),
                     ),
                   ],
                 ),
@@ -887,34 +821,42 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               Expanded(
                 child: _transactionHistory.isEmpty
                     ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.receipt_long_rounded,
-                              size: 64,
-                              color: Colors.grey[300],
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'No transactions yet',
-                              style: AppTheme.bodyLarge.copyWith(
-                                color: AppTheme.textSecondary,
-                              ),
-                            ),
-                          ],
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFE3F2FD),
+                          shape: BoxShape.circle,
                         ),
-                      )
-                    : ListView.builder(
-                        controller: scrollController,
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        itemCount: _transactionHistory.length,
-                        itemBuilder: (context, index) {
-                          return _TransactionItem(
-                            transaction: _transactionHistory[index],
-                          );
-                        },
+                        child: const Icon(
+                          Icons.receipt_long_rounded,
+                          size: 56,
+                          color: Color(0xFF64B5F6),
+                        ),
                       ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No transactions yet',
+                        style: GoogleFonts.urbanist(
+                          fontSize: 16,
+                          color: Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+                    : ListView.builder(
+                  controller: scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: _transactionHistory.length,
+                  itemBuilder: (context, index) {
+                    return _TransactionItem(
+                      transaction: _transactionHistory[index],
+                    );
+                  },
+                ),
               ),
             ],
           ),
@@ -928,24 +870,31 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(20),
         ),
         title: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                gradient: AppTheme.primaryGradient,
-                borderRadius: BorderRadius.circular(16),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
+                ),
+                borderRadius: BorderRadius.all(Radius.circular(12)),
               ),
               child: const Icon(
                 Icons.diamond_rounded,
                 color: Colors.white,
-                size: 28,
+                size: 24,
               ),
             ),
             const SizedBox(width: 16),
-            const Text('About GemFund'),
+            Text(
+              'About GemFund',
+              style: GoogleFonts.urbanist(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
         content: Column(
@@ -954,24 +903,28 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           children: [
             Text(
               'AI-powered decentralized crowdfunding platform with fraud detection.',
-              style: AppTheme.bodyMedium.copyWith(height: 1.5),
+              style: GoogleFonts.urbanist(
+                fontSize: 14,
+                height: 1.5,
+              ),
             ),
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
+                color: const Color(0xFFE3F2FD),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.auto_awesome, color: Colors.blue, size: 20),
+                  const Icon(Icons.auto_awesome, color: Color(0xFF1976D2), size: 18),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Powered by Google Gemini AI',
-                      style: AppTheme.bodySmall.copyWith(
-                        color: Colors.blue[700],
+                      style: GoogleFonts.urbanist(
+                        fontSize: 12,
+                        color: const Color(0xFF1976D2),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -994,44 +947,57 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text('Close', style: TextStyle(fontSize: 16)),
+            child: Text(
+              'Close',
+              style: GoogleFonts.urbanist(
+                fontSize: 15,
+                color: const Color(0xFF1976D2),
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(20),
         ),
         title: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppTheme.errorColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(16),
+                color: const Color(0xFFFFEBEE),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(
                 Icons.warning_rounded,
-                color: AppTheme.errorColor,
-                size: 28,
+                color: Color(0xFFEF5350),
+                size: 24,
               ),
             ),
             const SizedBox(width: 16),
-            const Expanded(
-              child: Text('Disconnect Wallet?'),
+            Expanded(
+              child: Text(
+                'Disconnect Wallet?',
+                style: GoogleFonts.urbanist(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         ),
         content: Text(
           'Are you sure you want to disconnect? Make sure you have backed up your recovery phrase.',
-          style: AppTheme.bodyMedium.copyWith(height: 1.5),
+          style: GoogleFonts.urbanist(
+            fontSize: 14,
+            height: 1.5,
+          ),
         ),
         actions: [
           TextButton(
@@ -1039,39 +1005,49 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
-            child: const Text('Cancel', style: TextStyle(fontSize: 16)),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.urbanist(
+                fontSize: 15,
+              ),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);
-              
+
               showDialog(
                 context: context,
                 barrierDismissible: false,
                 builder: (context) => const Center(
-                  child: CircularProgressIndicator(),
+                  child: CircularProgressIndicator(color: Color(0xFF1976D2)),
                 ),
               );
-              
+
               await WalletService().logout();
-              
+
               if (context.mounted) {
                 Navigator.pop(context);
                 Navigator.of(context).pushNamedAndRemoveUntil(
                   '/welcome',
-                  (route) => false,
+                      (route) => false,
                 );
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.errorColor,
+              backgroundColor: const Color(0xFFEF5350),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text('Disconnect', style: TextStyle(fontSize: 16)),
+            child: Text(
+              'Disconnect',
+              style: GoogleFonts.urbanist(
+                fontSize: 15,
+              ),
+            ),
           ),
         ],
       ),
@@ -1083,13 +1059,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 class _QuickActionCard extends StatelessWidget {
   final IconData icon;
   final String label;
-  final Color color;
   final VoidCallback onTap;
 
   const _QuickActionCard({
     required this.icon,
     required this.label,
-    required this.color,
     required this.onTap,
   });
 
@@ -1101,12 +1075,12 @@ class _QuickActionCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.15),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: const Color(0xFF64B5F6).withOpacity(0.15),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -1114,18 +1088,19 @@ class _QuickActionCard extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+              decoration: const BoxDecoration(
+                color: Color(0xFFE3F2FD),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: color, size: 24),
+              child: Icon(icon, color: const Color(0xFF1976D2), size: 24),
             ),
             const SizedBox(height: 8),
             Text(
               label,
-              style: AppTheme.bodySmall.copyWith(
+              style: GoogleFonts.urbanist(
+                fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: AppTheme.textPrimary,
+                color: Colors.black87,
               ),
             ),
           ],
@@ -1150,9 +1125,9 @@ class _TransactionItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: const Color(0xFF64B5F6).withOpacity(0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -1169,18 +1144,18 @@ class _TransactionItem extends StatelessWidget {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: transaction.isSuccess
-                        ? AppTheme.successColor.withOpacity(0.1)
-                        : AppTheme.errorColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
+                        ? const Color(0xFFE8F5E9)
+                        : const Color(0xFFFFEBEE),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     transaction.type == TransactionType.donate
                         ? Icons.favorite_rounded
                         : Icons.campaign_rounded,
                     color: transaction.isSuccess
-                        ? AppTheme.successColor
-                        : AppTheme.errorColor,
-                    size: 24,
+                        ? const Color(0xFF43A047)
+                        : const Color(0xFFEF5350),
+                    size: 22,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -1190,8 +1165,10 @@ class _TransactionItem extends StatelessWidget {
                     children: [
                       Text(
                         transaction.title,
-                        style: AppTheme.bodyLarge.copyWith(
+                        style: GoogleFonts.urbanist(
+                          fontSize: 15,
                           fontWeight: FontWeight.w600,
+                          color: Colors.black87,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -1199,8 +1176,9 @@ class _TransactionItem extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         transaction.formattedDate,
-                        style: AppTheme.bodySmall.copyWith(
-                          color: AppTheme.textSecondary,
+                        style: GoogleFonts.urbanist(
+                          fontSize: 12,
+                          color: Colors.black54,
                         ),
                       ),
                     ],
@@ -1211,33 +1189,34 @@ class _TransactionItem extends StatelessWidget {
                   children: [
                     Text(
                       '${transaction.amount.toStringAsFixed(4)} ETH',
-                      style: AppTheme.bodyLarge.copyWith(
+                      style: GoogleFonts.urbanist(
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: transaction.isSuccess
-                            ? AppTheme.successColor
-                            : AppTheme.errorColor,
+                            ? const Color(0xFF43A047)
+                            : const Color(0xFFEF5350),
                       ),
                     ),
                     const SizedBox(height: 4),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
-                        vertical: 2,
+                        vertical: 3,
                       ),
                       decoration: BoxDecoration(
                         color: transaction.isSuccess
-                            ? AppTheme.successColor.withOpacity(0.1)
-                            : AppTheme.errorColor.withOpacity(0.1),
+                            ? const Color(0xFFE8F5E9)
+                            : const Color(0xFFFFEBEE),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         transaction.isSuccess ? 'Success' : 'Failed',
-                        style: TextStyle(
+                        style: GoogleFonts.urbanist(
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
                           color: transaction.isSuccess
-                              ? AppTheme.successColor
-                              : AppTheme.errorColor,
+                              ? const Color(0xFF43A047)
+                              : const Color(0xFFEF5350),
                         ),
                       ),
                     ),
@@ -1259,7 +1238,7 @@ class _TransactionItem extends StatelessWidget {
       builder: (context) => Container(
         decoration: const BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -1281,24 +1260,28 @@ class _TransactionItem extends StatelessWidget {
               children: [
                 Container(
                   padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    gradient: AppTheme.primaryGradient,
-                    borderRadius: BorderRadius.circular(16),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
+                    ),
+                    borderRadius: BorderRadius.all(Radius.circular(12)),
                   ),
                   child: Icon(
                     transaction.type == TransactionType.donate
                         ? Icons.favorite_rounded
                         : Icons.campaign_rounded,
                     color: Colors.white,
-                    size: 28,
+                    size: 24,
                   ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
                     'Transaction Details',
-                    style: AppTheme.heading2.copyWith(
+                    style: GoogleFonts.urbanist(
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
+                      color: Colors.black87,
                     ),
                   ),
                 ),
@@ -1317,12 +1300,19 @@ class _TransactionItem extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF42A5F5),
+                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text('Close'),
+                child: Text(
+                  'Close',
+                  style: GoogleFonts.urbanist(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
             SizedBox(height: MediaQuery.of(context).padding.bottom),
@@ -1351,9 +1341,9 @@ class _DetailRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withOpacity(0.05),
+        color: const Color(0xFFE3F2FD),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -1361,8 +1351,9 @@ class _DetailRow extends StatelessWidget {
         children: [
           Text(
             label,
-            style: AppTheme.bodyMedium.copyWith(
-              color: AppTheme.textSecondary,
+            style: GoogleFonts.urbanist(
+              fontSize: 13,
+              color: Colors.black54,
             ),
           ),
           Expanded(
@@ -1372,8 +1363,10 @@ class _DetailRow extends StatelessWidget {
                 Flexible(
                   child: Text(
                     value,
-                    style: AppTheme.bodyMedium.copyWith(
+                    style: GoogleFonts.urbanist(
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
+                      color: Colors.black87,
                     ),
                     textAlign: TextAlign.end,
                     maxLines: 1,
@@ -1388,7 +1381,10 @@ class _DetailRow extends StatelessWidget {
                       HapticFeedback.mediumImpact();
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: const Text('Copied to clipboard!'),
+                          content: Text(
+                            'Copied to clipboard!',
+                            style: GoogleFonts.urbanist(),
+                          ),
                           behavior: SnackBarBehavior.floating,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -1400,7 +1396,7 @@ class _DetailRow extends StatelessWidget {
                     child: const Icon(
                       Icons.content_copy_rounded,
                       size: 16,
-                      color: AppTheme.primaryColor,
+                      color: Color(0xFF1976D2),
                     ),
                   ),
                 ],
@@ -1418,29 +1414,26 @@ class _ModernMenuItem extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
-  final Color color;
   final VoidCallback onTap;
 
   const _ModernMenuItem({
     required this.icon,
     required this.title,
     required this.subtitle,
-    required this.color,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: const Color(0xFF64B5F6).withOpacity(0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -1455,11 +1448,11 @@ class _ModernMenuItem extends StatelessWidget {
               children: [
                 Container(
                   padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFE3F2FD),
+                    borderRadius: BorderRadius.all(Radius.circular(12)),
                   ),
-                  child: Icon(icon, color: color, size: 24),
+                  child: Icon(icon, color: const Color(0xFF1976D2), size: 22),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -1468,15 +1461,18 @@ class _ModernMenuItem extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: AppTheme.bodyLarge.copyWith(
+                        style: GoogleFonts.urbanist(
+                          fontSize: 15,
                           fontWeight: FontWeight.w600,
+                          color: Colors.black87,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         subtitle,
-                        style: AppTheme.bodySmall.copyWith(
-                          color: AppTheme.textSecondary,
+                        style: GoogleFonts.urbanist(
+                          fontSize: 12,
+                          color: Colors.black54,
                         ),
                       ),
                     ],
@@ -1485,7 +1481,7 @@ class _ModernMenuItem extends StatelessWidget {
                 const Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 16,
-                  color: AppTheme.textSecondary,
+                  color: Colors.black54,
                 ),
               ],
             ),
@@ -1514,25 +1510,28 @@ class _AboutItem extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withOpacity(0.05),
+        color: const Color(0xFFE3F2FD),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: AppTheme.primaryColor),
+          Icon(icon, size: 18, color: const Color(0xFF1976D2)),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               label,
-              style: AppTheme.bodyMedium.copyWith(
-                color: AppTheme.textSecondary,
+              style: GoogleFonts.urbanist(
+                fontSize: 13,
+                color: Colors.black54,
               ),
             ),
           ),
           Text(
             value,
-            style: AppTheme.bodyMedium.copyWith(
+            style: GoogleFonts.urbanist(
+              fontSize: 13,
               fontWeight: FontWeight.w600,
+              color: Colors.black87,
             ),
           ),
         ],
