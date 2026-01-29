@@ -868,91 +868,183 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showAboutDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => Dialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
         ),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 340),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header with icon
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+                decoration: const BoxDecoration(
+                  color: Color(0xFF42A5F5),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                 ),
-                borderRadius: BorderRadius.all(Radius.circular(12)),
-              ),
-              child: const Icon(
-                Icons.diamond_rounded,
-                color: Colors.white,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Text(
-              'About GemFund',
-              style: GoogleFonts.urbanist(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'AI-powered decentralized crowdfunding platform with fraud detection.',
-              style: GoogleFonts.urbanist(
-                fontSize: 14,
-                height: 1.5,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE3F2FD),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.auto_awesome, color: Color(0xFF1976D2), size: 18),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Powered by Google Gemini AI',
-                      style: GoogleFonts.urbanist(
-                        fontSize: 12,
-                        color: const Color(0xFF1976D2),
-                        fontWeight: FontWeight.bold,
+                child: Column(
+                  children: [
+                    Container(
+                      width: 80,
+                      height: 80,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Image.asset(
+                        'assets/images/icon.png',
+                        fit: BoxFit.contain,
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 16),
+                    Text(
+                      'About GemFund',
+                      style: GoogleFonts.urbanist(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            const _AboutItem(label: 'Version', value: '1.0.0', icon: Icons.verified_rounded),
-            const _AboutItem(label: 'Network', value: 'Sepolia Testnet', icon: Icons.cloud_rounded),
-            const _AboutItem(label: 'Built with', value: 'Flutter & Solidity', icon: Icons.code_rounded),
-          ],
+
+              // Content
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    Text(
+                      'AI-powered decentralized crowdfunding platform with fraud detection.',
+                      style: GoogleFonts.urbanist(
+                        fontSize: 14,
+                        height: 1.6,
+                        color: Colors.black87,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Gemini AI Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE3F2FD),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.auto_awesome,
+                            color: Color(0xFF1976D2),
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Powered by Google Gemini AI',
+                            style: GoogleFonts.urbanist(
+                              fontSize: 13,
+                              color: const Color(0xFF1976D2),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Info items
+                    _buildSimpleInfoRow(
+                      icon: Icons.verified_rounded,
+                      label: 'Version',
+                      value: '1.0.0',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildSimpleInfoRow(
+                      icon: Icons.cloud_rounded,
+                      label: 'Network',
+                      value: 'Sepolia Testnet',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildSimpleInfoRow(
+                      icon: Icons.code_rounded,
+                      label: 'Built with',
+                      value: 'Flutter & Solidity',
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Close button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF42A5F5),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          'Close',
+                          style: GoogleFonts.urbanist(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+      ),
+    );
+  }
+
+  Widget _buildSimpleInfoRow({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: const Color(0xFF1976D2)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              label,
+              style: GoogleFonts.urbanist(
+                fontSize: 14,
+                color: Colors.black54,
               ),
             ),
-            child: Text(
-              'Close',
-              style: GoogleFonts.urbanist(
-                fontSize: 15,
-                color: const Color(0xFF1976D2),
-              ),
+          ),
+          Text(
+            value,
+            style: GoogleFonts.urbanist(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
             ),
           ),
         ],
@@ -1487,54 +1579,6 @@ class _ModernMenuItem extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-// ============= ABOUT ITEM =============
-class _AboutItem extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
-
-  const _AboutItem({
-    required this.label,
-    required this.value,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE3F2FD),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: const Color(0xFF1976D2)),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              label,
-              style: GoogleFonts.urbanist(
-                fontSize: 13,
-                color: Colors.black54,
-              ),
-            ),
-          ),
-          Text(
-            value,
-            style: GoogleFonts.urbanist(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
-          ),
-        ],
       ),
     );
   }
