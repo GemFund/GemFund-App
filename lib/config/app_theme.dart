@@ -43,9 +43,6 @@ class AppTheme {
     
     // AppBar Theme
     appBarTheme: AppBarTheme(
-      centerTitle: true,
-      elevation: 0,
-      backgroundColor: Colors.transparent,
       foregroundColor: textPrimary,
       titleTextStyle: GoogleFonts.inter(
         fontSize: 20,

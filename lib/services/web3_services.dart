@@ -172,6 +172,27 @@ class Web3Service {
       final credentials = EthPrivateKey.fromHex(cleanKey);
       final address = await credentials.extractAddress();
       final gasPrice = await getGasPrice();
+      
+      // Debug logging to identify transaction failure causes
+      final deadlineTimestamp = deadline.millisecondsSinceEpoch ~/ 1000;
+      final currentTimestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      print('=== Campaign Creation Debug ===');
+      print('Owner address: $address');
+      print('Title: "$title" (length: ${title.length})');
+      print('Description length: ${description.length}');
+      print('Target: $targetInEther ETH (wei: ${BigInt.from(targetInEther * 1e18)})');
+      print('Deadline: $deadline');
+      print('Deadline timestamp: $deadlineTimestamp');
+      print('Current timestamp: $currentTimestamp');
+      print('Deadline valid (future): ${deadlineTimestamp > currentTimestamp}');
+      print('Image URL: "$imageUrl" (length: ${imageUrl.length})');
+      print('Gas price: ${gasPrice.getValueInUnit(EtherUnit.gwei)} Gwei');
+      print('================================');
+      
+      // Validate deadline is in the future
+      if (deadlineTimestamp <= currentTimestamp) {
+        throw Exception('Campaign deadline must be in the future. Current: ${DateTime.now()}, Deadline: $deadline');
+      }
 
       final transaction = Transaction.callContract(
         contract: _contract,
@@ -185,7 +206,7 @@ class Web3Service {
           imageUrl,
         ],
         gasPrice: gasPrice,
-        maxGas: 500000,
+        maxGas: 2000000, // Increased for storing long strings (title, description, image URL)
       );
 
       final txHash = await _client.sendTransaction(
@@ -198,6 +219,9 @@ class Web3Service {
           throw Exception('Transaction timeout. Please try again.');
         },
       );
+
+      print('Transaction hash: $txHash');
+      print('View on Etherscan: https://sepolia.etherscan.io/tx/$txHash');
 
       await _waitForTransaction(txHash);
 

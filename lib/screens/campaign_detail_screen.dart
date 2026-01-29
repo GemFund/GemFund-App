@@ -119,9 +119,9 @@ Dukung di aplikasi GemFund!
                     ),
                   ),
 
-                  // Status Badge
+                  // Status Badge - positioned below the share button
                   Positioned(
-                    top: 70,
+                    top: 120, // Moved down to avoid overlap with share button
                     right: 16,
                     child: FadeInRight(
                       duration: const Duration(milliseconds: 800),
