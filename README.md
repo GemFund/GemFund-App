@@ -2,9 +2,13 @@
 
 **GemFund** is a cross-platform crowdfunding platform designed to **rebuild public trust** amid widespread fraud. Built with **Flutter** for mobile (Android/iOS), web, and desktop, it combines **Gemini AI (Multimodal)** for campaign authenticity verification with **blockchain** for full transaction transparency.
 
-Screenshot/onboarding.jpg
-Screenshot/onboarding (1).jpg
-Screenshot/onboarding (2).jpg
+## Screenshots
+
+![Onboarding 1](Screenshot/onboarding%20.jpg)
+![Onboarding 2](Screenshot/onboarding%20(1).jpg)
+![Onboarding 3](Screenshot/onboarding%20(2).jpg)
+![Campaign](Screenshot/campaign.jpg)
+![AI Score](Screenshot/AI%20score.jpg)
 
 ## Background & Challenges Faced
 The crowdfunding industry is facing a **serious crisis of trust** due to rampant fraud. According to the **FBI Internet Crime Complaint Center (IC3) 2024**, there were more than 4,500 complaints related to fraudulent charities, crowdfunding accounts, and disaster relief campaigns, resulting in approximately **$96 million** in losses in the United States alone. Globally, donors struggle to verify the authenticity of images and stories, lack transparency in fund usage, and fraud is often only detected after campaigns end.
