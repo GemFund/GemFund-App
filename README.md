@@ -4,7 +4,7 @@
 
 ## Screenshots
 
-![Onboarding 1](Screenshot/onboarding%20.jpg)
+![Onboarding 1](Screenshot/onboarding.jpg)
 ![Onboarding 2](Screenshot/onboarding%20(1).jpg)
 ![Onboarding 3](Screenshot/onboarding%20(2).jpg)
 ![Campaign](Screenshot/campaign.jpg)
