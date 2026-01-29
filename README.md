@@ -4,11 +4,11 @@
 
 ## Screenshots
 
-![Onboarding 1](Screenshot/onboarding.jpg)
-![Onboarding 2](Screenshot/onboarding%20(1).jpg)
-![Onboarding 3](Screenshot/onboarding%20(2).jpg)
-![Campaign](Screenshot/campaign.jpg)
-![AI Score](Screenshot/AI%20score.jpg)
+<img src="Screenshot/onboarding.jpg" width="400" alt="Onboarding 1" />
+<img src="Screenshot/onboarding%20(1).jpg" width="400" alt="Onboarding 2" />
+<img src="Screenshot/onboarding%20(2).jpg" width="400" alt="Onboarding 3" />
+<img src="Screenshot/campaign.jpg" width="400" alt="Campaign" />
+<img src="Screenshot/AI%20score.jpg" width="400" alt="AI Score" />
 
 ## Background & Challenges Faced
 The crowdfunding industry is facing a **serious crisis of trust** due to rampant fraud. According to the **FBI Internet Crime Complaint Center (IC3) 2024**, there were more than 4,500 complaints related to fraudulent charities, crowdfunding accounts, and disaster relief campaigns, resulting in approximately **$96 million** in losses in the United States alone. Globally, donors struggle to verify the authenticity of images and stories, lack transparency in fund usage, and fraud is often only detected after campaigns end.
